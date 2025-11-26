@@ -9,8 +9,10 @@ export const TeamProvider = ({ children }) => {
   const [players, setPlayers] = useState([]);
   const [pitchSettings, setPitchSettings] = useState({
     mode: '11', // '11' or '7'
-    color: 'green', // 'green', 'red', 'blue'
+    color: 'green', // 'green', 'red', 'blue', 'black'
     texture: 'striped', // 'striped', 'checkered', 'plain'
+    kitColor: '#ef4444', // Default red kit
+    kitNumberColor: '#ffffff', // Default white numbers
   });
 
   // Load from LocalStorage on mount
@@ -64,11 +66,7 @@ export const TeamProvider = ({ children }) => {
         
         statsKeys.forEach(key => {
           const total = newVotes.reduce((sum, v) => sum + parseInt(v[key]), 0);
-          // Weighted average: Original stats count as 1 vote initially to anchor it, 
-          // or we just average the votes. Let's average the votes + original value for stability
-          // For this app, let's say the "stats" become the average of all votes including the initial creation
           const initialValue = parseInt(p.initialStats?.[key] || p.stats[key]); 
-          // To keep it simple: Average of all votes. If no votes, use initial.
           newStats[key] = Math.round(total / newVotes.length);
         });
 
