@@ -279,6 +279,21 @@ frontend:
           agent: "testing"
           comment: "✅ CIRCULAR PLAYER TOKEN DESIGN REVERT FULLY VERIFIED: All 6 requested test scenarios passed successfully! 1) Player successfully added ('TestPlayer' with number 7) ✅ 2) Player appears as CIRCLE with User icon inside (no avatar uploaded) ✅ 3) RealisticJersey SVG is NOT present (0 jersey/shirt elements found) ✅ 4) Rating Badge (Level Number) is visible and positioned correctly ✅ 5) Pitch maintains vertical rectangular shape with perfect 3:4 aspect ratio (0.75) ✅ 6) Pitch color change to Red works correctly and vertical aspect ratio maintained ✅ The app has been successfully reverted from jersey icons back to circular player tokens with User icons, maintaining all functionality while removing the RealisticJersey SVG components."
 
+  - task: "Border Color Customization Update"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/Home.js, /app/frontend/src/components/Pitch.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "New border color customization feature - needs testing to verify 'Color de Borde' input exists, 'Color de Número' input is GONE, border color can be changed to Blue (#0000FF), and player tokens maintain circular design with photo/icon."
+        - working: true
+          agent: "testing"
+          comment: "✅ BORDER COLOR CUSTOMIZATION FULLY VERIFIED: All 6 requested test scenarios passed successfully! 1) Settings panel accessible via gear icon ✅ 2) 'Color del Borde' input exists in settings under 'Personalización de Equipación' section ✅ 3) 'Color de Número' input is correctly GONE (removed from settings) ✅ 4) Border color successfully changed from red (#ef4444) to Blue (#0000FF) using color picker ✅ 5) Player tokens maintain circular design structure with User icons ✅ 6) Border color change functionality working correctly - color picker shows blue selection and updates the kitColor setting ✅ The border color customization feature is working perfectly with the updated design that removed the number color option and kept only the border color customization."
+
 metadata:
   created_by: "testing_agent"
   version: "1.0"
