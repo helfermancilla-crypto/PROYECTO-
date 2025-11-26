@@ -213,7 +213,7 @@ const Home = () => {
                   <SelectValue placeholder="Seleccionar Formación" />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-800 border-slate-700 text-white">
-                  {Object.keys(availableFormations).map(fmt => (
+                  {availableFormations && Object.keys(availableFormations).map(fmt => (
                     <SelectItem key={fmt} value={fmt}>{fmt}</SelectItem>
                   ))}
                 </SelectContent>

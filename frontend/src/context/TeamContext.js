@@ -105,21 +105,37 @@ export const TeamProvider = ({ children }) => {
   };
 
   const changeMode = (newMode) => {
-    const defaultFormation = newMode === '11' ? '4-4-2' : '3-2-1';
-    const formations = newMode === '11' ? FORMATIONS_11 : FORMATIONS_7;
-    const layout = formations[defaultFormation];
-    
-    if (!layout) return;
-
-    const updatedPlayers = players.map((player, index) => {
-      if (index < layout.length) {
-        return { ...player, position: { x: layout[index].x, y: layout[index].y } };
+    try {
+      console.log("Changing mode to:", newMode);
+      const defaultFormation = newMode === '11' ? '4-4-2' : '3-2-1';
+      const formations = newMode === '11' ? FORMATIONS_11 : FORMATIONS_7;
+      
+      if (!formations) {
+        console.error("Formations not found for mode:", newMode);
+        return;
       }
-      return player;
-    });
 
-    setPlayers(updatedPlayers);
-    setPitchSettings(prev => ({ ...prev, mode: newMode, formation: defaultFormation }));
+      const layout = formations[defaultFormation];
+      
+      if (!layout) {
+        console.error("Default formation layout not found:", defaultFormation);
+        return;
+      }
+
+      const updatedPlayers = players.map((player, index) => {
+        if (index < layout.length) {
+          return { ...player, position: { x: layout[index].x, y: layout[index].y } };
+        }
+        return player;
+      });
+
+      setPlayers(updatedPlayers);
+      setPitchSettings(prev => ({ ...prev, mode: newMode, formation: defaultFormation }));
+      console.log("Mode changed successfully");
+    } catch (error) {
+      console.error("Error changing mode:", error);
+      toast.error("Error al cambiar de modo");
+    }
   };
 
   const addPlayer = (playerData) => {
