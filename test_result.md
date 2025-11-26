@@ -249,6 +249,21 @@ frontend:
           agent: "testing"
           comment: "✅ SPANISH TRANSLATION FULLY VERIFIED: Comprehensive testing completed with 15/15 elements successfully verified! Header shows 'Alineación Oficial', Add Player button says 'Añadir Jugador', form title shows 'Nuevo Jugador', all form fields in Spanish ('Nombre', 'Posición', 'Número'), Stats tab shows 'Estadísticas' with all Spanish stat labels ('Velocidad', 'Regate', 'Control', 'Pase', 'Tiro', 'Físico', 'Cabezazo'), right panel header shows 'Plantilla', settings panel shows 'Configuración Visual' and 'Color del Campo', and export button says 'Exportar'. The Soccer Builder App is fully localized in Spanish with proper translations throughout the interface."
 
+  - task: "3D Mode Removal and Fútbol 7/11 Modes Implementation"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/Home.js, /app/frontend/src/lib/formations.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "New feature request - needs testing to verify 3D toggle button is removed from header and new Modo de Juego selector with Fútbol 7/11 modes is implemented with correct formations."
+        - working: true
+          agent: "testing"
+          comment: "✅ 3D MODE REMOVAL AND FÚTBOL 7/11 MODES FULLY VERIFIED: All 8 requested test scenarios passed successfully! 1) 3D toggle button completely removed from header ✅ 2) 'Modo de Juego' selector present in right panel with both Fútbol 11 and Fútbol 7 buttons ✅ 3) Fútbol 7 mode correctly shows 7-a-side formations (3-2-1, 2-3-1, 3-3, 2-2-2, 1-4-1) ✅ 4) Successfully selected and applied 3-2-1 formation in Fútbol 7 mode ✅ 5) Fútbol 11 mode correctly shows 11-a-side formations (4-4-2, 4-3-3, 4-2-3-1, 3-5-2, 5-3-2) ✅ 6) Successfully selected and applied 4-4-2 formation in Fútbol 11 mode ✅ 7) Mode switching works correctly - formations update dynamically based on selected mode ✅ 8) Visual styling shows active mode with proper button highlighting ✅ The 3D mode has been properly removed and the new Fútbol 7/11 mode system is fully functional with correct formation options for each mode."
+
 metadata:
   created_by: "testing_agent"
   version: "1.0"
