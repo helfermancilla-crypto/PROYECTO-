@@ -9,13 +9,16 @@ export const useTeam = () => useContext(TeamContext);
 export const TeamProvider = ({ children }) => {
   const [players, setPlayers] = useState([]);
   const [clubInfo, setClubInfo] = useState({
-    name: 'DREAM TEAM FC',
+    name: 'MI EQUIPO FC',
     logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg/1200px-FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg.png' // Default placeholder
   });
   const [pitchSettings, setPitchSettings] = useState({
     formation: '4-3-3',
     color: 'green', 
     texture: 'striped',
+    kitColor: '#ef4444', // Default red kit
+    kitNumberColor: '#ffffff', // Default white numbers
+    viewMode: '2d', // '2d' or '3d'
   });
 
   // Load from LocalStorage on mount
@@ -47,13 +50,10 @@ export const TeamProvider = ({ children }) => {
     if (!layout) return;
 
     // Map existing players to new positions based on index
-    // This is a simple mapping. In a real app, you might match by role.
     const updatedPlayers = players.map((player, index) => {
       if (index < layout.length) {
         return { ...player, position: { x: layout[index].x, y: layout[index].y } };
       }
-      // If we have more players than the formation (subs), keep them or move to bench
-      // For now, we just leave them where they are or stack them
       return player;
     });
 

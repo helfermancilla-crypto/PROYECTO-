@@ -77,26 +77,36 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
     onOpenChange(false);
   };
 
+  const statLabels = {
+    speed: 'Velocidad',
+    dribbling: 'Regate',
+    reception: 'Control',
+    passing: 'Pase',
+    shooting: 'Tiro',
+    stamina: 'Físico',
+    heading: 'Cabezazo'
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto bg-slate-900 text-white border-slate-700">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold uppercase tracking-wider text-emerald-400">
-            {initialData ? 'Edit Player' : 'New Player'}
+            {initialData ? 'Editar Jugador' : 'Nuevo Jugador'}
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 py-4">
           <Tabs defaultValue="details" className="w-full">
             <TabsList className="grid w-full grid-cols-2 bg-slate-800">
-              <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="stats">Stats</TabsTrigger>
+              <TabsTrigger value="details">Detalles</TabsTrigger>
+              <TabsTrigger value="stats">Estadísticas</TabsTrigger>
             </TabsList>
             
             <TabsContent value="details" className="space-y-4 mt-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Name</Label>
+                  <Label>Nombre</Label>
                   <Input 
                     required 
                     value={formData.name} 
@@ -105,7 +115,7 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Nickname (Optional)</Label>
+                  <Label>Apodo (Opcional)</Label>
                   <Input 
                     value={formData.nickname} 
                     onChange={e => handleChange('nickname', e.target.value)} 
@@ -116,7 +126,7 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Number</Label>
+                  <Label>Número</Label>
                   <Input 
                     type="number" 
                     value={formData.number} 
@@ -125,23 +135,23 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Role</Label>
+                  <Label>Posición</Label>
                   <Select value={formData.role} onValueChange={val => handleChange('role', val)}>
                     <SelectTrigger className="bg-slate-800 border-slate-700">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-slate-800 border-slate-700 text-white">
-                      <SelectItem value="GK">Goalkeeper</SelectItem>
-                      <SelectItem value="DEF">Defender</SelectItem>
-                      <SelectItem value="MID">Midfielder</SelectItem>
-                      <SelectItem value="FWD">Forward</SelectItem>
+                      <SelectItem value="GK">Portero</SelectItem>
+                      <SelectItem value="DEF">Defensa</SelectItem>
+                      <SelectItem value="MID">Centrocampista</SelectItem>
+                      <SelectItem value="FWD">Delantero</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label>Photo / Avatar</Label>
+                <Label>Foto / Avatar</Label>
                 <Input 
                   type="file" 
                   accept="image/*" 
@@ -160,7 +170,7 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
               {Object.entries(formData.stats).map(([key, val]) => (
                 <div key={key} className="space-y-1">
                   <div className="flex justify-between text-xs uppercase font-bold text-slate-400">
-                    <span>{key}</span>
+                    <span>{statLabels[key] || key}</span>
                     <span className="text-emerald-400">{val}</span>
                   </div>
                   <Slider 
@@ -186,15 +196,15 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
                   onOpenChange(false);
                 }}
               >
-                Delete
+                Eliminar
               </Button>
             )}
             <div className="flex gap-2 ml-auto">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="border-slate-600 text-slate-300 hover:bg-slate-800">
-                Cancel
+                Cancelar
               </Button>
               <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                Save Player
+                Guardar Jugador
               </Button>
             </div>
           </DialogFooter>

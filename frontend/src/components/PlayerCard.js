@@ -96,7 +96,7 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
             <Edit className="w-5 h-5" />
           </Button>
           <Button onClick={() => onGenerateLink(player)} className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white border-none px-6">
-            <Share2 className="w-4 h-4 mr-2" /> Vote Link
+            <Share2 className="w-4 h-4 mr-2" /> Votar
           </Button>
           <DialogClose asChild>
              <Button size="icon" className="rounded-full bg-red-500/20 hover:bg-red-500/40 text-red-200 border border-red-500/50">

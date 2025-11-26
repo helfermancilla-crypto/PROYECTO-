@@ -35,13 +35,23 @@ const VotingPage = () => {
     setSubmitted(true);
   };
 
+  const statLabels = {
+    speed: 'Velocidad',
+    dribbling: 'Regate',
+    reception: 'Control',
+    passing: 'Pase',
+    shooting: 'Tiro',
+    stamina: 'Físico',
+    heading: 'Cabezazo'
+  };
+
   if (!player) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Player Not Found</h1>
-          <p className="text-slate-400 mb-4">This link might be invalid or the player was deleted.</p>
-          <Button onClick={() => navigate('/')}>Go Home</Button>
+          <h1 className="text-2xl font-bold mb-2">Jugador no encontrado</h1>
+          <p className="text-slate-400 mb-4">Este enlace podría ser inválido o el jugador fue eliminado.</p>
+          <Button onClick={() => navigate('/')}>Ir al Inicio</Button>
         </div>
       </div>
     );
@@ -55,12 +65,12 @@ const VotingPage = () => {
             <div className="flex justify-center">
               <CheckCircle2 className="w-16 h-16 text-emerald-500" />
             </div>
-            <h2 className="text-2xl font-bold text-white">Vote Recorded!</h2>
+            <h2 className="text-2xl font-bold text-white">¡Voto Registrado!</h2>
             <p className="text-slate-400">
-              Thanks for voting on {player.name}'s stats. The averages have been updated locally.
+              Gracias por votar en las estadísticas de {player.name}. Los promedios se han actualizado localmente.
             </p>
             <Button onClick={() => navigate('/')} className="w-full bg-slate-800 hover:bg-slate-700">
-              Back to Field
+              Volver al Campo
             </Button>
           </CardContent>
         </Card>
@@ -80,13 +90,13 @@ const VotingPage = () => {
             )}
           </div>
           <CardTitle className="text-3xl font-bold uppercase tracking-wider text-emerald-400">{player.name}</CardTitle>
-          <CardDescription className="text-slate-400">Vote on player attributes</CardDescription>
+          <CardDescription className="text-slate-400">Vota los atributos del jugador</CardDescription>
         </CardHeader>
         <CardContent className="pt-6 space-y-6">
           {Object.entries(votes).map(([key, val]) => (
             <div key={key} className="space-y-2">
               <div className="flex justify-between text-sm font-bold uppercase tracking-wide">
-                <span className="text-slate-300">{key}</span>
+                <span className="text-slate-300">{statLabels[key] || key}</span>
                 <span className="text-emerald-400">{val}</span>
               </div>
               <Slider 
@@ -101,7 +111,7 @@ const VotingPage = () => {
           ))}
           
           <Button onClick={handleSubmit} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-6 text-lg mt-4">
-            SUBMIT VOTE
+            ENVIAR VOTO
           </Button>
         </CardContent>
       </Card>

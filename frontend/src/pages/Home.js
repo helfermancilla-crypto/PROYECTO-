@@ -5,16 +5,18 @@ import Pitch from '../components/Pitch';
 import PlayerForm from '../components/PlayerForm';
 import PlayerCard from '../components/PlayerCard';
 import { Button } from "@/components/ui/button";
-import { Settings, Download, Plus, Shield, Users, Layout } from 'lucide-react';
+import { Settings, Download, Upload, Plus, Share2, Palette, Box, Layers, Layout } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import html2canvas from 'html2canvas';
 import { FORMATIONS } from '@/lib/formations';
+import { cn } from '@/lib/utils';
+import { Users } from 'lucide-react';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -27,7 +29,8 @@ const Home = () => {
     setPitchSettings,
     clubInfo,
     setClubInfo,
-    applyFormation
+    applyFormation,
+    importTeam
   } = useTeam();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -49,10 +52,10 @@ const Home = () => {
   const handleFormSubmit = (data) => {
     if (editingPlayer) {
       updatePlayer(editingPlayer.id, data);
-      toast.success("Player updated successfully");
+      toast.success("Jugador actualizado con éxito");
     } else {
       addPlayer(data);
-      toast.success("Player added to the squad");
+      toast.success("Jugador añadido a la plantilla");
     }
     setEditingPlayer(null);
   };
@@ -60,7 +63,30 @@ const Home = () => {
   const handleGenerateLink = (player) => {
     const url = `${window.location.origin}/vote/${player.id}`;
     navigator.clipboard.writeText(url);
-    toast.success("Voting link copied to clipboard!");
+    toast.success("¡Enlace de votación copiado!");
+  };
+
+  const handleExportJSON = () => {
+    const data = JSON.stringify({ players, pitchSettings, clubInfo }, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'soccer_builder_team.json';
+    link.click();
+  };
+
+  const handleImportJSON = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const success = importTeam(event.target.result);
+        if (success) toast.success("¡Equipo importado con éxito!");
+        else toast.error("Archivo de equipo inválido.");
+      };
+      reader.readAsText(file);
+    }
   };
 
   const handleExportImage = async () => {
@@ -112,15 +138,35 @@ const Home = () => {
               value={clubInfo.name}
               onChange={(e) => setClubInfo(prev => ({ ...prev, name: e.target.value }))}
               className="bg-transparent border-none text-xl md:text-2xl font-bold uppercase tracking-widest text-white placeholder:text-slate-600 focus-visible:ring-0 p-0 h-auto font-mono"
-              placeholder="CLUB NAME"
+              placeholder="NOMBRE DEL CLUB"
             />
-            <p className="text-xs text-emerald-500 font-bold tracking-wider uppercase">Official Lineup</p>
+            <p className="text-xs text-emerald-500 font-bold tracking-wider uppercase">Alineación Oficial</p>
           </div>
         </div>
         
         <div className="flex items-center gap-3">
+           {/* View Mode Toggle */}
+           <div className="flex items-center gap-2 bg-slate-800 rounded-full p-1 border border-slate-700 mr-2">
+            <Button 
+              size="sm" 
+              variant={pitchSettings.viewMode === '2d' ? 'secondary' : 'ghost'}
+              onClick={() => setPitchSettings(prev => ({...prev, viewMode: '2d'}))}
+              className="h-7 rounded-full px-3 text-xs"
+            >
+              <Layers className="w-3 h-3 mr-1" /> 2D
+            </Button>
+            <Button 
+              size="sm" 
+              variant={pitchSettings.viewMode === '3d' ? 'secondary' : 'ghost'}
+              onClick={() => setPitchSettings(prev => ({...prev, viewMode: '3d'}))}
+              className="h-7 rounded-full px-3 text-xs"
+            >
+              <Box className="w-3 h-3 mr-1" /> 3D
+            </Button>
+          </div>
+
            <Button onClick={handleExportImage} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-900/20">
-             <Download className="w-4 h-4 mr-2" /> Export
+             <Download className="w-4 h-4 mr-2" /> Exportar
            </Button>
         </div>
       </header>
@@ -144,14 +190,14 @@ const Home = () => {
           <div className="p-6 space-y-6 border-b border-slate-800 bg-slate-900/50">
             <div className="space-y-2">
               <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                <Layout className="w-3 h-3" /> Formation
+                <Layout className="w-3 h-3" /> Formación
               </Label>
               <Select 
                 value={pitchSettings.formation} 
                 onValueChange={applyFormation}
               >
                 <SelectTrigger className="bg-slate-800 border-slate-700 text-white h-10">
-                  <SelectValue placeholder="Select Formation" />
+                  <SelectValue placeholder="Seleccionar Formación" />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-800 border-slate-700 text-white">
                   {Object.keys(FORMATIONS).map(fmt => (
@@ -166,7 +212,7 @@ const Home = () => {
                 onClick={() => { setEditingPlayer(null); setIsFormOpen(true); }} 
                 className="flex-1 bg-slate-800 hover:bg-slate-700 text-white border border-slate-700"
               >
-                <Plus className="w-4 h-4 mr-2" /> Add Player
+                <Plus className="w-4 h-4 mr-2" /> Añadir Jugador
               </Button>
               
               <Sheet>
@@ -177,25 +223,84 @@ const Home = () => {
                 </SheetTrigger>
                 <SheetContent className="bg-slate-900 border-slate-800 text-white">
                   <SheetHeader>
-                    <SheetTitle className="text-emerald-400">Visual Settings</SheetTitle>
+                    <SheetTitle className="text-emerald-400">Configuración Visual</SheetTitle>
                   </SheetHeader>
-                  <div className="py-6 space-y-4">
-                    <div className="space-y-2">
-                      <Label>Pitch Color</Label>
-                      <Select 
-                        value={pitchSettings.color} 
-                        onValueChange={(v) => setPitchSettings(prev => ({...prev, color: v}))}
-                      >
-                        <SelectTrigger className="bg-slate-800 border-slate-700">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-slate-800 border-slate-700 text-white">
-                          <SelectItem value="green">Classic Green</SelectItem>
-                          <SelectItem value="red">Inferno Red</SelectItem>
-                          <SelectItem value="blue">Night Blue</SelectItem>
-                          <SelectItem value="black">Obsidian</SelectItem>
-                        </SelectContent>
-                      </Select>
+                  <div className="py-6 space-y-8">
+                    
+                    {/* Kit Settings */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-slate-300 font-bold uppercase text-xs tracking-wider">
+                        <Palette className="w-4 h-4" /> Personalización de Equipación
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Color Camiseta</Label>
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded border border-slate-600 shadow-sm" style={{backgroundColor: pitchSettings.kitColor}}></div>
+                            <Input 
+                              type="color" 
+                              value={pitchSettings.kitColor}
+                              onChange={(e) => setPitchSettings(prev => ({...prev, kitColor: e.target.value}))}
+                              className="w-full h-8 p-1 bg-slate-800 border-slate-700"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Color Número</Label>
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded border border-slate-600 shadow-sm" style={{backgroundColor: pitchSettings.kitNumberColor}}></div>
+                            <Input 
+                              type="color" 
+                              value={pitchSettings.kitNumberColor}
+                              onChange={(e) => setPitchSettings(prev => ({...prev, kitNumberColor: e.target.value}))}
+                              className="w-full h-8 p-1 bg-slate-800 border-slate-700"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Pitch Settings */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-slate-300 font-bold uppercase text-xs tracking-wider">
+                        <Settings className="w-4 h-4" /> Opciones del Campo
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label>Color del Campo</Label>
+                        <Select 
+                          value={pitchSettings.color} 
+                          onValueChange={(v) => setPitchSettings(prev => ({...prev, color: v}))}
+                        >
+                          <SelectTrigger className="bg-slate-800 border-slate-700">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                            <SelectItem value="green">Verde Clásico</SelectItem>
+                            <SelectItem value="red">Rojo Infierno</SelectItem>
+                            <SelectItem value="blue">Azul Noche</SelectItem>
+                            <SelectItem value="black">Obsidiana</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-slate-800 space-y-3">
+                      <Label className="text-slate-400 uppercase text-xs font-bold tracking-wider">Gestión de Datos</Label>
+                      <Button onClick={handleExportJSON} variant="outline" className="w-full justify-start border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white">
+                        <Download className="w-4 h-4 mr-2" /> Exportar Equipo JSON
+                      </Button>
+                      <div className="relative">
+                        <Button variant="outline" className="w-full justify-start border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white">
+                          <Upload className="w-4 h-4 mr-2" /> Importar Equipo JSON
+                        </Button>
+                        <input 
+                          type="file" 
+                          accept=".json" 
+                          onChange={handleImportJSON}
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                        />
+                      </div>
                     </div>
                   </div>
                 </SheetContent>
@@ -207,9 +312,9 @@ const Home = () => {
           <div className="flex-1 flex flex-col overflow-hidden">
             <div className="px-6 py-3 bg-slate-800/50 border-b border-slate-800 flex justify-between items-center">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                <Users className="w-3 h-3" /> Squad List
+                <Users className="w-3 h-3" /> Plantilla
               </span>
-              <span className="text-xs font-mono text-emerald-500">{players.length} Players</span>
+              <span className="text-xs font-mono text-emerald-500">{players.length} Jugadores</span>
             </div>
             
             <ScrollArea className="flex-1 p-4">
@@ -253,7 +358,7 @@ const Home = () => {
                 
                 {players.length === 0 && (
                   <div className="text-center py-10 text-slate-600 text-sm">
-                    No players yet.<br/>Click "Add Player" to start.
+                    Aún no hay jugadores.<br/>Haz clic en "Añadir Jugador" para empezar.
                   </div>
                 )}
               </div>
@@ -281,10 +386,5 @@ const Home = () => {
     </div>
   );
 };
-
-// Helper for class names in the list
-function cn(...classes) {
-  return classes.filter(Boolean).join(' ');
-}
 
 export default Home;
