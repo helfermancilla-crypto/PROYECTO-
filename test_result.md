@@ -182,9 +182,9 @@ frontend:
 
   - task: "Settings and Pitch Color Change"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/pages/Home.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
@@ -194,6 +194,9 @@ frontend:
         - working: true
           agent: "testing"
           comment: "✅ Settings panel opens correctly via gear icon. Pitch color can be changed from 'Classic Green' to 'Inferno Red' successfully. Color change is applied immediately and visually confirmed."
+        - working: false
+          agent: "testing"
+          comment: "❌ CRITICAL: Settings gear icon is completely missing from the UI. Only 2 buttons found on page: 'Add Player' and an empty button. The settings functionality code exists in Home.js but the gear icon button is not rendering in the header. This prevents users from accessing pitch color changes and other settings."
 
 metadata:
   created_by: "testing_agent"
