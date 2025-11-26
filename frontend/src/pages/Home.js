@@ -5,7 +5,7 @@ import Pitch from '../components/Pitch';
 import PlayerForm from '../components/PlayerForm';
 import PlayerCard from '../components/PlayerCard';
 import { Button } from "@/components/ui/button";
-import { Settings, Download, Upload, Plus, Share2, Palette, Layout } from 'lucide-react';
+import { Settings, Download, Upload, Plus, Share2, Palette, Layout, Activity, Shield, Trophy } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import html2canvas from 'html2canvas';
-import { FORMATIONS_11, FORMATIONS_7 } from '@/lib/formations';
+import { FORMATIONS } from '@/lib/formations';
 import { cn } from '@/lib/utils';
 import { Users } from 'lucide-react';
 
@@ -29,7 +29,6 @@ const Home = () => {
     clubInfo,
     setClubInfo,
     applyFormation,
-    changeMode,
     importTeam
   } = useTeam();
 
@@ -115,8 +114,32 @@ const Home = () => {
     }
   };
 
-  // Get available formations based on mode
-  const availableFormations = pitchSettings.mode === '11' ? FORMATIONS_11 : FORMATIONS_7;
+  // Calculate Team Stats
+  const calculateTeamStats = () => {
+    if (players.length === 0) return { overall: 0, att: 0, mid: 0, def: 0 };
+    
+    const getAvg = (role) => {
+      const rolePlayers = players.filter(p => role === 'ALL' || p.role === role);
+      if (rolePlayers.length === 0) return 0;
+      
+      const sum = rolePlayers.reduce((acc, p) => {
+        const stats = Object.values(p.stats || {});
+        const pAvg = stats.length ? stats.reduce((a, b) => a + b, 0) / stats.length : 0;
+        return acc + pAvg;
+      }, 0);
+      
+      return Math.round(sum / rolePlayers.length);
+    };
+
+    return {
+      overall: getAvg('ALL'),
+      att: getAvg('FWD'),
+      mid: getAvg('MID'),
+      def: getAvg('DEF') // Includes GK for simplicity or separate if needed
+    };
+  };
+
+  const teamStats = calculateTeamStats();
 
   return (
     <div className="min-h-screen bg-slate-950 text-white flex flex-col overflow-hidden">
@@ -172,32 +195,25 @@ const Home = () => {
           {/* Controls Section */}
           <div className="p-6 space-y-6 border-b border-slate-800 bg-slate-900/50">
             
-            {/* Pitch Mode Selector */}
-            <div className="space-y-2">
-              <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                <Layout className="w-3 h-3" /> Modo de Juego
-              </Label>
-              <div className="grid grid-cols-2 gap-2">
-                <Button 
-                  variant={pitchSettings.mode === '11' ? 'default' : 'outline'}
-                  onClick={() => changeMode('11')}
-                  className={cn(
-                    "h-8 text-xs",
-                    pitchSettings.mode === '11' ? "bg-emerald-600 hover:bg-emerald-700" : "border-slate-700 text-slate-400"
-                  )}
-                >
-                  Fútbol 11
-                </Button>
-                <Button 
-                  variant={pitchSettings.mode === '7' ? 'default' : 'outline'}
-                  onClick={() => changeMode('7')}
-                  className={cn(
-                    "h-8 text-xs",
-                    pitchSettings.mode === '7' ? "bg-emerald-600 hover:bg-emerald-700" : "border-slate-700 text-slate-400"
-                  )}
-                >
-                  Fútbol 7
-                </Button>
+            {/* Team Stats Panel (Replaces Mode Selector) */}
+            <div className="grid grid-cols-3 gap-2 bg-slate-800/50 p-3 rounded-lg border border-slate-700">
+              <div className="flex flex-col items-center justify-center border-r border-slate-700 pr-2">
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Media</span>
+                <span className="text-2xl font-bold text-white">{teamStats.overall}</span>
+              </div>
+              <div className="col-span-2 grid grid-cols-3 gap-1">
+                <div className="flex flex-col items-center">
+                  <span className="text-[8px] text-slate-500 uppercase">ATT</span>
+                  <span className="text-sm font-bold text-emerald-400">{teamStats.att}</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className="text-[8px] text-slate-500 uppercase">MID</span>
+                  <span className="text-sm font-bold text-yellow-400">{teamStats.mid}</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className="text-[8px] text-slate-500 uppercase">DEF</span>
+                  <span className="text-sm font-bold text-blue-400">{teamStats.def}</span>
+                </div>
               </div>
             </div>
 
@@ -212,8 +228,8 @@ const Home = () => {
                 <SelectTrigger className="bg-slate-800 border-slate-700 text-white h-10">
                   <SelectValue placeholder="Seleccionar Formación" />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700 text-white">
-                  {availableFormations && Object.keys(availableFormations).map(fmt => (
+                <SelectContent className="bg-slate-800 border-slate-700 text-white max-h-[300px]">
+                  {Object.keys(FORMATIONS).map(fmt => (
                     <SelectItem key={fmt} value={fmt}>{fmt}</SelectItem>
                   ))}
                 </SelectContent>

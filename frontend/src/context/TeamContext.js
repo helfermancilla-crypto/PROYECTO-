@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { FORMATIONS_11, FORMATIONS_7 } from '@/lib/formations';
+import { FORMATIONS } from '@/lib/formations';
 import axios from 'axios';
 import { toast } from "sonner";
 
@@ -17,8 +17,7 @@ export const TeamProvider = ({ children }) => {
   });
   
   const defaultSettings = {
-    mode: '11',
-    formation: '4-3-3',
+    formation: '4-3-3 (11v11)',
     color: 'green', 
     texture: 'striped',
     kitColor: '#ef4444',
@@ -88,8 +87,7 @@ export const TeamProvider = ({ children }) => {
 
 
   const applyFormation = (formationName) => {
-    const formations = pitchSettings.mode === '11' ? FORMATIONS_11 : FORMATIONS_7;
-    const layout = formations[formationName];
+    const layout = FORMATIONS[formationName];
     
     if (!layout) return;
 
@@ -104,43 +102,8 @@ export const TeamProvider = ({ children }) => {
     setPitchSettings(prev => ({ ...prev, formation: formationName }));
   };
 
-  const changeMode = (newMode) => {
-    try {
-      console.log("Changing mode to:", newMode);
-      const defaultFormation = newMode === '11' ? '4-4-2' : '3-2-1';
-      const formations = newMode === '11' ? FORMATIONS_11 : FORMATIONS_7;
-      
-      if (!formations) {
-        console.error("Formations not found for mode:", newMode);
-        return;
-      }
-
-      const layout = formations[defaultFormation];
-      
-      if (!layout) {
-        console.error("Default formation layout not found:", defaultFormation);
-        return;
-      }
-
-      const updatedPlayers = players.map((player, index) => {
-        if (index < layout.length) {
-          return { ...player, position: { x: layout[index].x, y: layout[index].y } };
-        }
-        return player;
-      });
-
-      setPlayers(updatedPlayers);
-      setPitchSettings(prev => ({ ...prev, mode: newMode, formation: defaultFormation }));
-      console.log("Mode changed successfully");
-    } catch (error) {
-      console.error("Error changing mode:", error);
-      toast.error("Error al cambiar de modo");
-    }
-  };
-
   const addPlayer = (playerData) => {
-    const formations = pitchSettings.mode === '11' ? FORMATIONS_11 : FORMATIONS_7;
-    const currentLayout = formations[pitchSettings.formation] || [];
+    const currentLayout = FORMATIONS[pitchSettings.formation] || [];
     const index = players.length;
     const defaultPos = index < currentLayout.length 
       ? { x: currentLayout[index].x, y: currentLayout[index].y } 
@@ -226,7 +189,6 @@ export const TeamProvider = ({ children }) => {
       addVote,
       importTeam,
       applyFormation,
-      changeMode,
       loading
     }}>
       {children}
