@@ -29,7 +29,6 @@ const Home = () => {
     clubInfo,
     setClubInfo,
     applyFormation,
-    changeMode,
     importTeam
   } = useTeam();
 
@@ -218,35 +217,7 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Mode Selector */}
-            <div className="space-y-2">
-              <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                <Layout className="w-3 h-3" /> Modo de Juego
-              </Label>
-              <div className="grid grid-cols-2 gap-2">
-                <Button 
-                  variant={pitchSettings.mode === '11' ? 'default' : 'outline'}
-                  onClick={() => changeMode('11')}
-                  className={cn(
-                    "h-8 text-xs",
-                    pitchSettings.mode === '11' ? "bg-emerald-600 hover:bg-emerald-700" : "border-slate-700 text-slate-400"
-                  )}
-                >
-                  Fútbol 11
-                </Button>
-                <Button 
-                  variant={pitchSettings.mode === '7' ? 'default' : 'outline'}
-                  onClick={() => changeMode('7')}
-                  className={cn(
-                    "h-8 text-xs",
-                    pitchSettings.mode === '7' ? "bg-emerald-600 hover:bg-emerald-700" : "border-slate-700 text-slate-400"
-                  )}
-                >
-                  Fútbol 7
-                </Button>
-              </div>
-            </div>
-
+            {/* Formation Selector (Unified) */}
             <div className="space-y-2">
               <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
                 <Layout className="w-3 h-3" /> Formación
@@ -258,7 +229,7 @@ const Home = () => {
                 <SelectTrigger className="bg-slate-800 border-slate-700 text-white h-10">
                   <SelectValue placeholder="Seleccionar Formación" />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                <SelectContent className="bg-slate-800 border-slate-700 text-white max-h-[300px]">
                   {Object.keys(FORMATIONS).map(fmt => (
                     <SelectItem key={fmt} value={fmt}>{fmt}</SelectItem>
                   ))}

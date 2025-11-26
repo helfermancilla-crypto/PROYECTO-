@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { FORMATIONS_11, FORMATIONS_7 } from '@/lib/formations';
+import { FORMATIONS } from '@/lib/formations';
 import axios from 'axios';
 import { toast } from "sonner";
 
@@ -17,14 +17,13 @@ export const TeamProvider = ({ children }) => {
   });
   
   const defaultSettings = {
-    mode: '11',
-    formation: '4-3-3 (11v11)',
+    formation: '4-3-3 (11v11)', // Must match a key in FORMATIONS
     color: 'green', 
     texture: 'striped',
     kitColor: '#ef4444',
     kitNumberColor: '#ffffff',
-    cardColor: '#1e293b', // Default dark card
-    cardTexture: 'silk', // silk, mesh
+    cardColor: '#1e293b',
+    cardTexture: 'silk',
     viewMode: '2d',
   };
 
@@ -40,12 +39,12 @@ export const TeamProvider = ({ children }) => {
         
         if (data) {
           setPlayers(data.players || []);
+          // Merge settings carefully to preserve defaults if keys are missing
           setPitchSettings(prev => ({ ...prev, ...data.pitchSettings }));
           setClubInfo(prev => ({ ...prev, ...data.clubInfo }));
         }
       } catch (error) {
         console.error("Error fetching team:", error);
-        // toast.error("Error al cargar el equipo desde el servidor.");
       } finally {
         setLoading(false);
       }
@@ -88,8 +87,12 @@ export const TeamProvider = ({ children }) => {
 
 
   const applyFormation = (formationName) => {
-    const layout = FORMATIONS_11[formationName] || FORMATIONS_7[formationName];
-    if (!layout) return;
+    const layout = FORMATIONS[formationName];
+    
+    if (!layout) {
+      console.error("Formation not found:", formationName);
+      return;
+    }
 
     const updatedPlayers = players.map((player, index) => {
       if (index < layout.length) {
@@ -102,32 +105,10 @@ export const TeamProvider = ({ children }) => {
     setPitchSettings(prev => ({ ...prev, formation: formationName }));
   };
 
-  const changeMode = (newMode) => {
-    try {
-      const defaultFormation = newMode === '11' ? '4-4-2 (11v11)' : '3-2-1 (7v7)';
-      const formations = newMode === '11' ? FORMATIONS_11 : FORMATIONS_7;
-      const layout = formations[defaultFormation];
-      
-      if (!layout) return;
-
-      const updatedPlayers = players.map((player, index) => {
-        if (index < layout.length) {
-          return { ...player, position: { x: layout[index].x, y: layout[index].y } };
-        }
-        return player;
-      });
-
-      setPlayers(updatedPlayers);
-      setPitchSettings(prev => ({ ...prev, mode: newMode, formation: defaultFormation }));
-    } catch (error) {
-      console.error("Error changing mode:", error);
-    }
-  };
-
   const addPlayer = (playerData) => {
-    const formations = pitchSettings.mode === '11' ? FORMATIONS_11 : FORMATIONS_7;
-    const currentLayout = formations[pitchSettings.formation] || [];
+    const currentLayout = FORMATIONS[pitchSettings.formation] || [];
     const index = players.length;
+    // If squad is full for the formation, place in center
     const defaultPos = index < currentLayout.length 
       ? { x: currentLayout[index].x, y: currentLayout[index].y } 
       : { x: 50, y: 50 };
@@ -207,7 +188,6 @@ export const TeamProvider = ({ children }) => {
       addVote,
       importTeam,
       applyFormation,
-      changeMode,
       loading
     }}>
       {children}
