@@ -244,30 +244,16 @@ const Home = () => {
                       <div className="flex items-center gap-2 text-slate-300 font-bold uppercase text-xs tracking-wider">
                         <Palette className="w-4 h-4" /> Personalización de Equipación
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>Color Camiseta</Label>
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded border border-slate-600 shadow-sm" style={{backgroundColor: pitchSettings.kitColor}}></div>
-                            <Input 
-                              type="color" 
-                              value={pitchSettings.kitColor}
-                              onChange={(e) => setPitchSettings(prev => ({...prev, kitColor: e.target.value}))}
-                              className="w-full h-8 p-1 bg-slate-800 border-slate-700"
-                            />
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Color Número</Label>
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded border border-slate-600 shadow-sm" style={{backgroundColor: pitchSettings.kitNumberColor}}></div>
-                            <Input 
-                              type="color" 
-                              value={pitchSettings.kitNumberColor}
-                              onChange={(e) => setPitchSettings(prev => ({...prev, kitNumberColor: e.target.value}))}
-                              className="w-full h-8 p-1 bg-slate-800 border-slate-700"
-                            />
-                          </div>
+                      <div className="space-y-2">
+                        <Label>Color del Borde</Label>
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded border border-slate-600 shadow-sm" style={{backgroundColor: pitchSettings.kitColor}}></div>
+                          <Input 
+                            type="color" 
+                            value={pitchSettings.kitColor}
+                            onChange={(e) => setPitchSettings(prev => ({...prev, kitColor: e.target.value}))}
+                            className="w-full h-8 p-1 bg-slate-800 border-slate-700"
+                          />
                         </div>
                       </div>
                     </div>

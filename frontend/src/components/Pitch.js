@@ -6,6 +6,7 @@ import { User } from 'lucide-react';
 
 const DraggableToken = ({ player, overall, onDoubleClick, updatePos }) => {
   const ref = useRef(null);
+  const { pitchSettings } = useTeam();
   
   const handleMouseDown = (e) => {
     e.preventDefault();
@@ -44,6 +45,9 @@ const DraggableToken = ({ player, overall, onDoubleClick, updatePos }) => {
     document.addEventListener('mouseup', onMouseUp);
   };
 
+  // Use kitColor for the border
+  const borderColor = pitchSettings.kitColor || '#ffffff';
+
   return (
     <div
       ref={ref}
@@ -54,8 +58,11 @@ const DraggableToken = ({ player, overall, onDoubleClick, updatePos }) => {
     >
       {/* Circular Token */}
       <div className="relative w-16 h-16 md:w-20 md:h-20 transition-transform group-hover:scale-110">
-        {/* Main Circle (Photo) */}
-        <div className="w-full h-full rounded-full border-[3px] border-white shadow-xl overflow-hidden bg-slate-800 relative z-10">
+        {/* Main Circle (Photo) - Dynamic Border Color */}
+        <div 
+          className="w-full h-full rounded-full border-[3px] shadow-xl overflow-hidden bg-slate-800 relative z-10"
+          style={{ borderColor: borderColor }}
+        >
           {player.avatar ? (
             <img src={player.avatar} alt={player.name} className="w-full h-full object-cover" />
           ) : (
