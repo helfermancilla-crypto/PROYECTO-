@@ -114,8 +114,9 @@ const Home = () => {
           
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="border-slate-700 bg-slate-800 text-slate-300">
+              <Button variant="outline" size="icon" className="border-slate-700 bg-slate-800 text-slate-300" aria-label="Settings">
                 <Settings className="w-5 h-5" />
+                <span className="sr-only">Settings</span>
               </Button>
             </SheetTrigger>
             <SheetContent className="bg-slate-900 border-slate-800 text-white">
