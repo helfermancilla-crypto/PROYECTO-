@@ -14,7 +14,6 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
 
   const handleDownload = async () => {
     if (cardRef.current) {
-      // Force images to load before capture
       const images = cardRef.current.querySelectorAll('img');
       const promises = Array.from(images).map(img => {
         if (img.complete) return Promise.resolve();
@@ -22,7 +21,6 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
       });
       await Promise.all(promises);
 
-      // Small delay to ensure rendering
       await new Promise(resolve => setTimeout(resolve, 100));
 
       const canvas = await html2canvas(cardRef.current, {
@@ -64,7 +62,6 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
             ref={cardRef}
             className="relative w-[380px] h-[500px] overflow-hidden font-fifa"
             style={{
-              // Precise clip-path to match the border image
               clipPath: "path('M 50 15 L 330 15 C 330 15 330 40 365 55 L 365 350 C 365 450 190 485 190 485 C 190 485 15 450 15 350 L 15 55 C 50 40 50 15 50 15 Z')",
               boxShadow: "0 0 30px rgba(0,0,0,0.5)"
             }}
@@ -83,17 +80,17 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
               }}
             ></div>
 
-            {/* 3. Content Layer - Safe Zone Padding */}
-            <div className="absolute inset-0 z-20 flex flex-col px-10 py-12">
+            {/* 3. Content Layer - INCREASED PADDING & SCALING */}
+            <div className="absolute inset-0 z-20 flex flex-col px-14 py-16">
               
               {/* Top Section */}
               <div className="flex flex-1 relative">
                 
-                {/* Left Info Column */}
-                <div className="flex flex-col items-center w-[28%] pt-5 space-y-1 z-30">
+                {/* Left Info Column - Moved slightly right */}
+                <div className="flex flex-col items-center w-[30%] pt-6 space-y-1 z-30 ml-2">
                   <div className="flex flex-col items-center leading-none">
-                    <span className="text-[3.5rem] font-bold text-[#fde047] drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">{overall}</span>
-                    <span className="text-xl font-bold text-[#fde047] uppercase tracking-wider drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] -mt-1">{player.role}</span>
+                    <span className="text-[3rem] font-bold text-[#fde047] drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">{overall}</span>
+                    <span className="text-lg font-bold text-[#fde047] uppercase tracking-wider drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] -mt-1">{player.role}</span>
                   </div>
                   
                   <div className="w-full h-[1px] bg-[#fde047]/40 my-1"></div>
@@ -113,8 +110,8 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
                   </div>
                 </div>
 
-                {/* Player Image - Centered and Scaled */}
-                <div className="absolute top-2 right-[-15px] w-[220px] h-[260px] z-20 flex items-end justify-center">
+                {/* Player Image - Scaled down further to fit */}
+                <div className="absolute top-4 right-[-20px] w-[200px] h-[240px] z-20 flex items-end justify-center">
                   {player.avatar ? (
                     <img 
                       src={player.avatar} 
@@ -127,22 +124,22 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
                 </div>
               </div>
 
-              {/* Bottom Section */}
-              <div className="mt-auto relative z-30 pb-2">
+              {/* Bottom Section - Pushed UP to avoid bottom tip */}
+              <div className="mt-auto relative z-30 pb-6">
                 {/* Name */}
                 <div className="text-center mb-2">
-                  <h2 className="text-3xl font-bold text-[#fde047] uppercase tracking-widest drop-shadow-[0_3px_3px_rgba(0,0,0,0.8)] truncate px-2">
+                  <h2 className="text-2xl font-bold text-[#fde047] uppercase tracking-widest drop-shadow-[0_3px_3px_rgba(0,0,0,0.8)] truncate px-2">
                     {player.nickname || player.name}
                   </h2>
                   <div className="h-[1px] w-3/4 mx-auto bg-gradient-to-r from-transparent via-[#fde047] to-transparent opacity-60"></div>
                 </div>
 
-                {/* Stats */}
-                <div className="grid grid-cols-2 gap-x-2 gap-y-0 px-1">
+                {/* Stats - Compact Grid */}
+                <div className="grid grid-cols-2 gap-x-4 gap-y-0 px-2">
                   {displayStats.map((stat, i) => (
                     <div key={i} className="flex items-center justify-center gap-2">
-                      <span className="text-xl font-bold text-white drop-shadow-md w-8 text-right">{stat.val}</span>
-                      <span className="text-sm font-bold text-[#fde047] uppercase tracking-wider drop-shadow-md w-8 text-left">{stat.label}</span>
+                      <span className="text-lg font-bold text-white drop-shadow-md w-6 text-right">{stat.val}</span>
+                      <span className="text-xs font-bold text-[#fde047] uppercase tracking-wider drop-shadow-md w-6 text-left">{stat.label}</span>
                     </div>
                   ))}
                 </div>
