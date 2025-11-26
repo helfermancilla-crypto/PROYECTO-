@@ -14,12 +14,16 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
 
   const handleDownload = async () => {
     if (cardRef.current) {
+      // Force images to load before capture
       const images = cardRef.current.querySelectorAll('img');
       const promises = Array.from(images).map(img => {
         if (img.complete) return Promise.resolve();
         return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; });
       });
       await Promise.all(promises);
+
+      // Small delay to ensure rendering
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: null,
@@ -58,9 +62,9 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
         <div className="relative group">
           <div 
             ref={cardRef}
-            className="relative w-[380px] h-[500px] overflow-hidden"
+            className="relative w-[380px] h-[500px] overflow-hidden font-fifa"
             style={{
-              // Adjusted clip-path to be slightly smaller than the border image to avoid white edges
+              // Precise clip-path to match the border image
               clipPath: "path('M 50 15 L 330 15 C 330 15 330 40 365 55 L 365 350 C 365 450 190 485 190 485 C 190 485 15 450 15 350 L 15 55 C 50 40 50 15 50 15 Z')",
               boxShadow: "0 0 30px rgba(0,0,0,0.5)"
             }}
@@ -70,7 +74,7 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
 
             {/* 2. Texture */}
             <div 
-              className="absolute inset-0 z-10 opacity-60 mix-blend-multiply"
+              className="absolute inset-0 z-10 opacity-50 mix-blend-multiply"
               style={{
                 backgroundImage: `url('${TEXTURE_URL}')`,
                 backgroundSize: 'cover',
@@ -79,21 +83,22 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
               }}
             ></div>
 
-            {/* 3. Content Layer - INCREASED PADDING (SAFE ZONE) */}
-            <div className="absolute inset-0 z-20 flex flex-col px-12 py-14">
+            {/* 3. Content Layer - Safe Zone Padding */}
+            <div className="absolute inset-0 z-20 flex flex-col px-10 py-12">
               
               {/* Top Section */}
               <div className="flex flex-1 relative">
                 
-                {/* Left Info */}
-                <div className="flex flex-col items-center w-[28%] pt-6 space-y-2 z-30">
+                {/* Left Info Column */}
+                <div className="flex flex-col items-center w-[28%] pt-5 space-y-1 z-30">
                   <div className="flex flex-col items-center leading-none">
-                    <span className="text-4xl font-bold text-[#fde047] font-mono drop-shadow-md">{overall}</span>
-                    <span className="text-lg font-bold text-[#fde047] uppercase tracking-wider drop-shadow-md">{player.role}</span>
+                    <span className="text-[3.5rem] font-bold text-[#fde047] drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">{overall}</span>
+                    <span className="text-xl font-bold text-[#fde047] uppercase tracking-wider drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] -mt-1">{player.role}</span>
                   </div>
                   
                   <div className="w-full h-[1px] bg-[#fde047]/40 my-1"></div>
                   
+                  {/* Nation */}
                   <div className="w-8 h-5 relative shadow-md border border-[#fde047]/30 overflow-hidden rounded-[2px]">
                     {player.nation ? (
                       <img src={player.nation} alt="Nation" className="w-full h-full object-cover" />
@@ -102,13 +107,14 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
                     )}
                   </div>
 
+                  {/* Club */}
                   <div className="w-8 h-8 relative mt-1">
                      <img src={clubInfo.logo} alt="Club" className="w-full h-full object-contain drop-shadow-lg" />
                   </div>
                 </div>
 
-                {/* Player Image - SCALED DOWN & CENTERED */}
-                <div className="absolute top-4 right-[-10px] w-[200px] h-[240px] z-20 flex items-end justify-center">
+                {/* Player Image - Centered and Scaled */}
+                <div className="absolute top-2 right-[-15px] w-[220px] h-[260px] z-20 flex items-end justify-center">
                   {player.avatar ? (
                     <img 
                       src={player.avatar} 
@@ -116,25 +122,27 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
                       className="w-full h-full object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)]" 
                     />
                   ) : (
-                    <div className="text-white/20 text-8xl">?</div>
+                    <div className="text-white/20 text-8xl font-fifa">?</div>
                   )}
                 </div>
               </div>
 
               {/* Bottom Section */}
-              <div className="mt-auto relative z-30 pb-4">
-                <div className="text-center mb-3">
-                  <h2 className="text-3xl font-bold text-[#fde047] uppercase tracking-widest font-sans drop-shadow-lg truncate">
+              <div className="mt-auto relative z-30 pb-2">
+                {/* Name */}
+                <div className="text-center mb-2">
+                  <h2 className="text-3xl font-bold text-[#fde047] uppercase tracking-widest drop-shadow-[0_3px_3px_rgba(0,0,0,0.8)] truncate px-2">
                     {player.nickname || player.name}
                   </h2>
-                  <div className="h-[1px] w-2/3 mx-auto bg-gradient-to-r from-transparent via-[#fde047] to-transparent opacity-60"></div>
+                  <div className="h-[1px] w-3/4 mx-auto bg-gradient-to-r from-transparent via-[#fde047] to-transparent opacity-60"></div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1 px-2">
+                {/* Stats */}
+                <div className="grid grid-cols-2 gap-x-2 gap-y-0 px-1">
                   {displayStats.map((stat, i) => (
-                    <div key={i} className="flex items-center justify-start gap-2">
-                      <span className="text-xl font-bold text-white font-mono drop-shadow-md">{stat.val}</span>
-                      <span className="text-xs font-bold text-[#fde047] uppercase tracking-wider drop-shadow-md">{stat.label}</span>
+                    <div key={i} className="flex items-center justify-center gap-2">
+                      <span className="text-xl font-bold text-white drop-shadow-md w-8 text-right">{stat.val}</span>
+                      <span className="text-sm font-bold text-[#fde047] uppercase tracking-wider drop-shadow-md w-8 text-left">{stat.label}</span>
                     </div>
                   ))}
                 </div>
@@ -163,7 +171,7 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
           <Button onClick={() => onEdit(player)} size="icon" className="rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20">
             <Edit className="w-5 h-5" />
           </Button>
-          <Button onClick={() => onGenerateLink(player)} className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white border-none px-6">
+          <Button onClick={() => onGenerateLink(player)} className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white border-none px-6 font-fifa tracking-wide">
             <Share2 className="w-4 h-4 mr-2" /> Votar
           </Button>
           <DialogClose asChild>
