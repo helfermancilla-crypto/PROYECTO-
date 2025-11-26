@@ -204,8 +204,10 @@ metadata:
   test_sequence: 1
 
 test_plan:
-  current_focus: []
-  stuck_tasks: []
+  current_focus: 
+    - "Settings and Pitch Color Change"
+  stuck_tasks: 
+    - "Settings and Pitch Color Change"
   test_all: false
   test_priority: "high_first"
 
