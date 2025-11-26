@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import html2canvas from 'html2canvas';
-import { FORMATIONS } from '@/lib/formations';
+import { FORMATIONS_11, FORMATIONS_7 } from '@/lib/formations';
 import { cn } from '@/lib/utils';
 import { Users } from 'lucide-react';
 
@@ -29,6 +29,7 @@ const Home = () => {
     clubInfo,
     setClubInfo,
     applyFormation,
+    changeMode,
     importTeam
   } = useTeam();
 
@@ -141,6 +142,9 @@ const Home = () => {
 
   const teamStats = calculateTeamStats();
 
+  // Get available formations based on mode
+  const availableFormations = pitchSettings.mode === '11' ? FORMATIONS_11 : FORMATIONS_7;
+
   return (
     <div className="min-h-screen bg-slate-950 text-white flex flex-col overflow-hidden">
       {/* Header */}
@@ -195,7 +199,7 @@ const Home = () => {
           {/* Controls Section */}
           <div className="p-6 space-y-6 border-b border-slate-800 bg-slate-900/50">
             
-            {/* Team Stats Panel (Replaces Mode Selector) */}
+            {/* Team Stats Panel */}
             <div className="grid grid-cols-3 gap-2 bg-slate-800/50 p-3 rounded-lg border border-slate-700">
               <div className="flex flex-col items-center justify-center border-r border-slate-700 pr-2">
                 <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Media</span>
@@ -217,6 +221,35 @@ const Home = () => {
               </div>
             </div>
 
+            {/* Mode Selector */}
+            <div className="space-y-2">
+              <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                <Layout className="w-3 h-3" /> Modo de Juego
+              </Label>
+              <div className="grid grid-cols-2 gap-2">
+                <Button 
+                  variant={pitchSettings.mode === '11' ? 'default' : 'outline'}
+                  onClick={() => changeMode('11')}
+                  className={cn(
+                    "h-8 text-xs",
+                    pitchSettings.mode === '11' ? "bg-emerald-600 hover:bg-emerald-700" : "border-slate-700 text-slate-400"
+                  )}
+                >
+                  Fútbol 11
+                </Button>
+                <Button 
+                  variant={pitchSettings.mode === '7' ? 'default' : 'outline'}
+                  onClick={() => changeMode('7')}
+                  className={cn(
+                    "h-8 text-xs",
+                    pitchSettings.mode === '7' ? "bg-emerald-600 hover:bg-emerald-700" : "border-slate-700 text-slate-400"
+                  )}
+                >
+                  Fútbol 7
+                </Button>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
                 <Layout className="w-3 h-3" /> Formación
@@ -228,8 +261,8 @@ const Home = () => {
                 <SelectTrigger className="bg-slate-800 border-slate-700 text-white h-10">
                   <SelectValue placeholder="Seleccionar Formación" />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700 text-white max-h-[300px]">
-                  {Object.keys(FORMATIONS).map(fmt => (
+                <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                  {availableFormations && Object.keys(availableFormations).map(fmt => (
                     <SelectItem key={fmt} value={fmt}>{fmt}</SelectItem>
                   ))}
                 </SelectContent>
@@ -250,19 +283,38 @@ const Home = () => {
                     <Settings className="w-5 h-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent className="bg-slate-900 border-slate-800 text-white">
+                <SheetContent className="bg-slate-900 border-slate-800 text-white overflow-y-auto">
                   <SheetHeader>
                     <SheetTitle className="text-emerald-400">Configuración Visual</SheetTitle>
                   </SheetHeader>
                   <div className="py-6 space-y-8">
                     
+                    {/* Card Settings */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-slate-300 font-bold uppercase text-xs tracking-wider">
+                        <Shield className="w-4 h-4" /> Personalización de Tarjeta
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Color de Fondo Tarjeta</Label>
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded border border-slate-600 shadow-sm" style={{backgroundColor: pitchSettings.cardColor}}></div>
+                          <Input 
+                            type="color" 
+                            value={pitchSettings.cardColor}
+                            onChange={(e) => setPitchSettings(prev => ({...prev, cardColor: e.target.value}))}
+                            className="w-full h-8 p-1 bg-slate-800 border-slate-700"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Kit Settings */}
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 text-slate-300 font-bold uppercase text-xs tracking-wider">
                         <Palette className="w-4 h-4" /> Personalización de Equipación
                       </div>
                       <div className="space-y-2">
-                        <Label>Color del Borde</Label>
+                        <Label>Color del Borde (Ficha)</Label>
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 rounded border border-slate-600 shadow-sm" style={{backgroundColor: pitchSettings.kitColor}}></div>
                           <Input 

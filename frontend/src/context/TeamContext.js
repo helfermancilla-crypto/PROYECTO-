@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { FORMATIONS } from '@/lib/formations';
+import { FORMATIONS_11, FORMATIONS_7 } from '@/lib/formations';
 import axios from 'axios';
 import { toast } from "sonner";
 
@@ -17,11 +17,14 @@ export const TeamProvider = ({ children }) => {
   });
   
   const defaultSettings = {
+    mode: '11',
     formation: '4-3-3 (11v11)',
     color: 'green', 
     texture: 'striped',
     kitColor: '#ef4444',
     kitNumberColor: '#ffffff',
+    cardColor: '#1e293b', // Default dark card
+    cardTexture: 'silk', // silk, mesh
     viewMode: '2d',
   };
 
@@ -42,7 +45,7 @@ export const TeamProvider = ({ children }) => {
         }
       } catch (error) {
         console.error("Error fetching team:", error);
-        toast.error("Error al cargar el equipo desde el servidor.");
+        // toast.error("Error al cargar el equipo desde el servidor.");
       } finally {
         setLoading(false);
       }
@@ -51,8 +54,7 @@ export const TeamProvider = ({ children }) => {
     fetchTeam();
   }, []);
 
-  // Save to API whenever state changes (Debounced ideally, but simple effect for now)
-  // We use a ref to skip the initial render save to avoid overwriting server data with defaults before load
+  // Save to API whenever state changes (Debounced)
   const isLoaded = React.useRef(false);
 
   useEffect(() => {
@@ -75,20 +77,18 @@ export const TeamProvider = ({ children }) => {
     }
   }, []);
 
-  // Trigger save on changes
   useEffect(() => {
     if (isLoaded.current) {
       const timeoutId = setTimeout(() => {
         saveTeam(players, pitchSettings, clubInfo);
-      }, 1000); // 1 second debounce
+      }, 1000);
       return () => clearTimeout(timeoutId);
     }
   }, [players, pitchSettings, clubInfo, saveTeam]);
 
 
   const applyFormation = (formationName) => {
-    const layout = FORMATIONS[formationName];
-    
+    const layout = FORMATIONS_11[formationName] || FORMATIONS_7[formationName];
     if (!layout) return;
 
     const updatedPlayers = players.map((player, index) => {
@@ -102,8 +102,31 @@ export const TeamProvider = ({ children }) => {
     setPitchSettings(prev => ({ ...prev, formation: formationName }));
   };
 
+  const changeMode = (newMode) => {
+    try {
+      const defaultFormation = newMode === '11' ? '4-4-2 (11v11)' : '3-2-1 (7v7)';
+      const formations = newMode === '11' ? FORMATIONS_11 : FORMATIONS_7;
+      const layout = formations[defaultFormation];
+      
+      if (!layout) return;
+
+      const updatedPlayers = players.map((player, index) => {
+        if (index < layout.length) {
+          return { ...player, position: { x: layout[index].x, y: layout[index].y } };
+        }
+        return player;
+      });
+
+      setPlayers(updatedPlayers);
+      setPitchSettings(prev => ({ ...prev, mode: newMode, formation: defaultFormation }));
+    } catch (error) {
+      console.error("Error changing mode:", error);
+    }
+  };
+
   const addPlayer = (playerData) => {
-    const currentLayout = FORMATIONS[pitchSettings.formation] || [];
+    const formations = pitchSettings.mode === '11' ? FORMATIONS_11 : FORMATIONS_7;
+    const currentLayout = formations[pitchSettings.formation] || [];
     const index = players.length;
     const defaultPos = index < currentLayout.length 
       ? { x: currentLayout[index].x, y: currentLayout[index].y } 
@@ -133,11 +156,7 @@ export const TeamProvider = ({ children }) => {
     setPlayers(players.filter(p => p.id !== id));
   };
 
-  // This function is now mainly for local optimistic updates, 
-  // but the actual voting happens on the VotingPage via direct API call.
-  // If we want to reflect votes here, we'd need to poll or reload.
   const addVote = async (playerId, voteStats) => {
-    // Optimistic update
     setPlayers(players.map(p => {
       if (p.id === playerId) {
         const newVotes = [...(p.votes || []), voteStats];
@@ -154,7 +173,6 @@ export const TeamProvider = ({ children }) => {
       return p;
     }));
     
-    // Real API call is handled in VotingPage usually, but if called from here:
     try {
         await axios.post(`${API_URL}/player/${playerId}/vote`, voteStats);
     } catch (e) {
@@ -189,6 +207,7 @@ export const TeamProvider = ({ children }) => {
       addVote,
       importTeam,
       applyFormation,
+      changeMode,
       loading
     }}>
       {children}

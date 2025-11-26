@@ -13,6 +13,7 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
     nickname: '',
     number: '10',
     role: 'MID',
+    nation: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png', // Default flag
     avatar: '',
     stats: {
       speed: 70,
@@ -29,12 +30,12 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
     if (initialData) {
       setFormData(initialData);
     } else {
-      // Reset form for new player
       setFormData({
         name: '',
         nickname: '',
         number: '10',
         role: 'MID',
+        nation: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png',
         avatar: '',
         stats: {
           speed: 70,
@@ -72,7 +73,6 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
   };
 
   const handleSubmit = (e) => {
-    console.log("Form submitted", formData);
     e.preventDefault();
     onSubmit(formData);
     onOpenChange(false);
@@ -148,6 +148,21 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
                       <SelectItem value="FWD">Delantero</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Nacionalidad (URL Bandera)</Label>
+                <div className="flex gap-2">
+                   <Input 
+                    value={formData.nation} 
+                    onChange={e => handleChange('nation', e.target.value)} 
+                    className="bg-slate-800 border-slate-700"
+                    placeholder="https://..."
+                  />
+                  {formData.nation && (
+                    <img src={formData.nation} alt="Flag" className="w-10 h-auto object-contain rounded border border-slate-600" />
+                  )}
                 </div>
               </div>
 
