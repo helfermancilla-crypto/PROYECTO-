@@ -264,6 +264,21 @@ frontend:
           agent: "testing"
           comment: "✅ 3D MODE REMOVAL AND FÚTBOL 7/11 MODES FULLY VERIFIED: All 8 requested test scenarios passed successfully! 1) 3D toggle button completely removed from header ✅ 2) 'Modo de Juego' selector present in right panel with both Fútbol 11 and Fútbol 7 buttons ✅ 3) Fútbol 7 mode correctly shows 7-a-side formations (3-2-1, 2-3-1, 3-3, 2-2-2, 1-4-1) ✅ 4) Successfully selected and applied 3-2-1 formation in Fútbol 7 mode ✅ 5) Fútbol 11 mode correctly shows 11-a-side formations (4-4-2, 4-3-3, 4-2-3-1, 3-5-2, 5-3-2) ✅ 6) Successfully selected and applied 4-4-2 formation in Fútbol 11 mode ✅ 7) Mode switching works correctly - formations update dynamically based on selected mode ✅ 8) Visual styling shows active mode with proper button highlighting ✅ The 3D mode has been properly removed and the new Fútbol 7/11 mode system is fully functional with correct formation options for each mode."
 
+  - task: "Circular Player Token Design Revert"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/Pitch.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "New design revert request - needs testing to verify players appear as circular tokens with User icons instead of RealisticJersey SVG components, while maintaining rating badges and vertical pitch aspect ratio."
+        - working: true
+          agent: "testing"
+          comment: "✅ CIRCULAR PLAYER TOKEN DESIGN REVERT FULLY VERIFIED: All 6 requested test scenarios passed successfully! 1) Player successfully added ('TestPlayer' with number 7) ✅ 2) Player appears as CIRCLE with User icon inside (no avatar uploaded) ✅ 3) RealisticJersey SVG is NOT present (0 jersey/shirt elements found) ✅ 4) Rating Badge (Level Number) is visible and positioned correctly ✅ 5) Pitch maintains vertical rectangular shape with perfect 3:4 aspect ratio (0.75) ✅ 6) Pitch color change to Red works correctly and vertical aspect ratio maintained ✅ The app has been successfully reverted from jersey icons back to circular player tokens with User icons, maintaining all functionality while removing the RealisticJersey SVG components."
+
 metadata:
   created_by: "testing_agent"
   version: "1.0"
