@@ -5,16 +5,15 @@ import Pitch from '../components/Pitch';
 import PlayerForm from '../components/PlayerForm';
 import PlayerCard from '../components/PlayerCard';
 import { Button } from "@/components/ui/button";
-import { Settings, Download, Upload, Plus, Share2, Palette, Box, Layers, Layout } from 'lucide-react';
+import { Settings, Download, Upload, Plus, Share2, Palette, Layout } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import html2canvas from 'html2canvas';
-import { FORMATIONS } from '@/lib/formations';
+import { FORMATIONS_11, FORMATIONS_7 } from '@/lib/formations';
 import { cn } from '@/lib/utils';
 import { Users } from 'lucide-react';
 
@@ -115,6 +114,9 @@ const Home = () => {
     }
   };
 
+  // Get available formations based on mode
+  const availableFormations = pitchSettings.mode === '11' ? FORMATIONS_11 : FORMATIONS_7;
+
   return (
     <div className="min-h-screen bg-slate-950 text-white flex flex-col overflow-hidden">
       {/* Header */}
@@ -145,26 +147,6 @@ const Home = () => {
         </div>
         
         <div className="flex items-center gap-3">
-           {/* View Mode Toggle */}
-           <div className="flex items-center gap-2 bg-slate-800 rounded-full p-1 border border-slate-700 mr-2">
-            <Button 
-              size="sm" 
-              variant={pitchSettings.viewMode === '2d' ? 'secondary' : 'ghost'}
-              onClick={() => setPitchSettings(prev => ({...prev, viewMode: '2d'}))}
-              className="h-7 rounded-full px-3 text-xs"
-            >
-              <Layers className="w-3 h-3 mr-1" /> 2D
-            </Button>
-            <Button 
-              size="sm" 
-              variant={pitchSettings.viewMode === '3d' ? 'secondary' : 'ghost'}
-              onClick={() => setPitchSettings(prev => ({...prev, viewMode: '3d'}))}
-              className="h-7 rounded-full px-3 text-xs"
-            >
-              <Box className="w-3 h-3 mr-1" /> 3D
-            </Button>
-          </div>
-
            <Button onClick={handleExportImage} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-900/20">
              <Download className="w-4 h-4 mr-2" /> Exportar
            </Button>
@@ -188,6 +170,36 @@ const Home = () => {
           
           {/* Controls Section */}
           <div className="p-6 space-y-6 border-b border-slate-800 bg-slate-900/50">
+            
+            {/* Pitch Mode Selector */}
+            <div className="space-y-2">
+              <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                <Layout className="w-3 h-3" /> Modo de Juego
+              </Label>
+              <div className="grid grid-cols-2 gap-2">
+                <Button 
+                  variant={pitchSettings.mode === '11' ? 'default' : 'outline'}
+                  onClick={() => setPitchSettings(prev => ({...prev, mode: '11', formation: '4-4-2'}))}
+                  className={cn(
+                    "h-8 text-xs",
+                    pitchSettings.mode === '11' ? "bg-emerald-600 hover:bg-emerald-700" : "border-slate-700 text-slate-400"
+                  )}
+                >
+                  Fútbol 11
+                </Button>
+                <Button 
+                  variant={pitchSettings.mode === '7' ? 'default' : 'outline'}
+                  onClick={() => setPitchSettings(prev => ({...prev, mode: '7', formation: '3-2-1'}))}
+                  className={cn(
+                    "h-8 text-xs",
+                    pitchSettings.mode === '7' ? "bg-emerald-600 hover:bg-emerald-700" : "border-slate-700 text-slate-400"
+                  )}
+                >
+                  Fútbol 7
+                </Button>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
                 <Layout className="w-3 h-3" /> Formación
@@ -200,7 +212,7 @@ const Home = () => {
                   <SelectValue placeholder="Seleccionar Formación" />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-800 border-slate-700 text-white">
-                  {Object.keys(FORMATIONS).map(fmt => (
+                  {Object.keys(availableFormations).map(fmt => (
                     <SelectItem key={fmt} value={fmt}>{fmt}</SelectItem>
                   ))}
                 </SelectContent>

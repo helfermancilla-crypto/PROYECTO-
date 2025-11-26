@@ -2,100 +2,72 @@ import React, { useRef } from 'react';
 import Draggable from 'react-draggable';
 import { useTeam } from '../context/TeamContext';
 import { cn } from '@/lib/utils';
-import { User } from 'lucide-react';
 
-const PlayerToken = ({ player, onDoubleClick, bounds }) => {
-  const { updatePlayerPosition } = useTeam();
-  const nodeRef = useRef(null);
-
-  const handleStop = (e, data) => {
-    // Convert pixels back to percentage for responsiveness if needed, 
-    // but for this draggable lib, we usually stick to relative pixels or controlled positions.
-    // However, our context expects {x, y} as percentages for the formation logic.
-    // The Draggable component uses pixels. 
-    // To keep it simple for this prototype: We will let Draggable handle the visual movement
-    // and we won't sync back to percentage on every drag stop unless we calculate parent dimensions.
-    // For the "Builder" feel, visual persistence is key.
-    
-    // NOTE: In a robust app, we'd calculate: xPercent = (data.x / parentWidth) * 100
-    // Here we are just updating the state to re-render.
-    // Since we are using percentage-based positioning for initial placement (formations),
-    // but Draggable uses pixels, there's a conflict.
-    // FIX: We will use a wrapper that positions based on %, and Draggable handles offset.
-    // OR: We simply don't update the global "percentage" state on drag, only visual.
-    // BUT: The user wants to save positions.
-    
-    // Let's try to get the parent element to calculate %.
-    const parent = nodeRef.current.offsetParent;
-    if (parent) {
-      const xPercent = (data.x / parent.offsetWidth) * 100;
-      const yPercent = (data.y / parent.offsetHeight) * 100;
-      updatePlayerPosition(player.id, { x: xPercent, y: yPercent });
-    }
-  };
-
-  // Calculate Overall Rating
-  const statsArr = Object.values(player.stats || {});
-  const overall = statsArr.length ? Math.round(statsArr.reduce((a, b) => a + b, 0) / statsArr.length) : 75;
-
-  // Position based on percentage
-  // We need to convert the stored % {x, y} to CSS 'left' and 'top'
-  // Draggable needs 'position' prop if we want it controlled, or 'defaultPosition' if uncontrolled.
-  // To allow formation updates to move players, we need 'position'.
-  // But 'position' expects pixels.
-  // Workaround: We use the style={{ left: %, top: % }} on the wrapper, and Draggable controls offset?
-  // No, Draggable is absolute.
-  
-  // SIMPLIFICATION: We will render the div at the % position. 
-  // When dragging starts, we let it move. When it stops, we calc new %.
-  
+// Realistic Jersey Component
+const RealisticJersey = ({ color, numberColor, number, stripes }) => {
   return (
-    <div 
-      className="absolute"
-      style={{ left: `${player.position.x}%`, top: `${player.position.y}%` }}
-    >
-      <Draggable
-        nodeRef={nodeRef}
-        bounds="parent"
-        // We start at 0,0 relative to the container div which is positioned at the correct %
-        // Actually, Draggable needs to be the absolute item itself to work best with bounds.
-        // Let's revert: The Draggable IS the absolute item.
-        // We need to pass pixel values to 'position' if we want to control it via state (formations).
-        // Since we don't have easy access to parent pixels in render without a ref hook, 
-        // we will use a trick: The parent Pitch passes its dimensions? 
-        // Or we just use style directly and don't use the 'position' prop of Draggable, 
-        // but rather let React render the 'style' and Draggable updates the DOM.
-        // When formation changes, state updates, component re-renders with new style.
-        position={{ x: 0, y: 0 }} // We rely on the parent div's left/top
-        onStop={(e, data) => {
-           // This is tricky with Draggable + Percentage.
-           // Alternative: Don't use Draggable for the formation snap.
-           // Let's just use standard HTML5 Drag and Drop or a simpler mouse handler?
-           // No, Draggable is smooth.
-           
-           // Let's try this: The Draggable element is wrapped.
-           // The wrapper is positioned by %.
-           // The Draggable has position {0,0}.
-           // When you drag, you are dragging the inner element.
-           // On stop, we calculate the delta, add it to the wrapper's %, and reset inner to 0,0.
-        }}
-      >
-         {/* 
-            Wait, simpler approach for this specific request:
-            Just render the div with absolute position. 
-            Add onMouseDown handler to implement custom drag logic that updates % state directly.
-         */}
-         <div ref={nodeRef} className="hidden" /> 
-      </Draggable>
+    <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md filter">
+      <defs>
+        <filter id="jersey-shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="rgba(0,0,0,0.5)" />
+        </filter>
+        <linearGradient id="jersey-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="rgba(255,255,255,0.2)" />
+          <stop offset="50%" stopColor="rgba(0,0,0,0)" />
+          <stop offset="100%" stopColor="rgba(0,0,0,0.1)" />
+        </linearGradient>
+      </defs>
       
-      {/* Custom Drag Implementation for Percentage-based layout */}
-      <DraggableToken player={player} overall={overall} onDoubleClick={onDoubleClick} updatePos={updatePlayerPosition} />
-    </div>
+      <g filter="url(#jersey-shadow)">
+        {/* Base Shirt Shape */}
+        <path 
+          d="M20,25 L30,10 L40,15 L60,15 L70,10 L80,25 L75,35 L65,30 L65,85 L35,85 L35,30 L25,35 Z" 
+          fill={color} 
+          stroke="rgba(0,0,0,0.1)" 
+          strokeWidth="1"
+        />
+        
+        {/* Stripes Pattern (Optional) */}
+        {stripes && (
+          <path 
+            d="M42,15 L42,85 M50,15 L50,85 M58,15 L58,85" 
+            stroke="rgba(0,0,0,0.15)" 
+            strokeWidth="4" 
+            clipPath="url(#shirt-clip)"
+          />
+        )}
+
+        {/* Collar */}
+        <path d="M40,15 Q50,25 60,15" fill="none" stroke="rgba(0,0,0,0.2)" strokeWidth="2" />
+        
+        {/* Gradient Overlay for 3D effect */}
+        <path 
+          d="M20,25 L30,10 L40,15 L60,15 L70,10 L80,25 L75,35 L65,30 L65,85 L35,85 L35,30 L25,35 Z" 
+          fill="url(#jersey-gradient)" 
+        />
+      </g>
+
+      {/* Number */}
+      <text 
+        x="50" 
+        y="55" 
+        textAnchor="middle" 
+        dominantBaseline="middle" 
+        fill={numberColor} 
+        fontSize="28" 
+        fontWeight="bold" 
+        fontFamily="monospace"
+        style={{ textShadow: '0px 1px 2px rgba(0,0,0,0.5)' }}
+      >
+        {number}
+      </text>
+    </svg>
   );
 };
 
 const DraggableToken = ({ player, overall, onDoubleClick, updatePos }) => {
   const ref = useRef(null);
+  const { pitchSettings } = useTeam();
   
   const handleMouseDown = (e) => {
     e.preventDefault();
@@ -134,6 +106,9 @@ const DraggableToken = ({ player, overall, onDoubleClick, updatePos }) => {
     document.addEventListener('mouseup', onMouseUp);
   };
 
+  const kitColor = pitchSettings.kitColor || '#ef4444';
+  const numberColor = pitchSettings.kitNumberColor || '#ffffff';
+
   return (
     <div
       ref={ref}
@@ -142,32 +117,18 @@ const DraggableToken = ({ player, overall, onDoubleClick, updatePos }) => {
       className="absolute -translate-x-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing z-20 group"
       style={{ left: `${player.position.x}%`, top: `${player.position.y}%` }}
     >
-      {/* Circular Token */}
+      {/* Jersey Token */}
       <div className="relative w-16 h-16 md:w-20 md:h-20 transition-transform group-hover:scale-110">
-        {/* Main Circle (Photo) */}
-        <div className="w-full h-full rounded-full border-[3px] border-white shadow-xl overflow-hidden bg-slate-800 relative z-10">
-          {player.avatar ? (
-            <img src={player.avatar} alt={player.name} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-slate-700 text-slate-400">
-              <User className="w-8 h-8" />
-            </div>
-          )}
-        </div>
-
-        {/* Rating Badge (Small Circle) */}
+        <RealisticJersey 
+          color={kitColor} 
+          numberColor={numberColor} 
+          number={player.number} 
+          stripes={pitchSettings.texture === 'striped'}
+        />
+        
+        {/* Role Indicator */}
         <div className={cn(
-          "absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 border-white z-20 shadow-md",
-          overall >= 85 ? "bg-yellow-500 text-black" :
-          overall >= 75 ? "bg-emerald-500 text-white" :
-          "bg-slate-500 text-white"
-        )}>
-          {overall}
-        </div>
-
-        {/* Role Indicator (Tiny dot top left) */}
-        <div className={cn(
-          "absolute top-0 left-0 w-4 h-4 rounded-full border-2 border-white shadow-sm z-20",
+          "absolute top-0 right-2 w-3 h-3 rounded-full border border-white shadow-sm",
           player.role === 'GK' ? 'bg-yellow-400' :
           player.role === 'DEF' ? 'bg-blue-500' :
           player.role === 'MID' ? 'bg-emerald-500' : 'bg-rose-500'
@@ -175,7 +136,7 @@ const DraggableToken = ({ player, overall, onDoubleClick, updatePos }) => {
       </div>
 
       {/* Name Pill */}
-      <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-black/80 backdrop-blur-sm px-3 py-1 rounded-full border border-white/20 shadow-lg whitespace-nowrap z-10">
+      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-black/80 backdrop-blur-sm px-3 py-1 rounded-full border border-white/20 shadow-lg whitespace-nowrap z-10">
         <span className="text-[10px] md:text-xs font-bold text-white uppercase tracking-wider">
           {player.nickname || player.name}
         </span>
@@ -188,51 +149,68 @@ const Pitch = ({ onPlayerClick }) => {
   const { players, pitchSettings } = useTeam();
   const pitchRef = useRef(null);
 
+  const getPitchBackground = () => {
+    const { color } = pitchSettings;
+    if (color === 'green') return 'bg-[#2d5a27]';
+    if (color === 'red') return 'bg-[#4a1a1a]';
+    if (color === 'blue') return 'bg-[#1a2a4a]';
+    if (color === 'black') return 'bg-[#1a1a1a]';
+    return 'bg-[#2d5a27]';
+  };
+
   return (
-    <div className="w-full h-full flex items-center justify-center p-4 md:p-8">
+    <div className="w-full h-full flex flex-col items-center justify-center p-4 overflow-hidden">
       <div 
         id="soccer-pitch"
         ref={pitchRef}
-        className="relative w-full max-w-[500px] aspect-[3/4] rounded-lg shadow-2xl border-[6px] border-white/10 overflow-hidden bg-[#2d5a27]"
+        className={cn(
+          "relative w-full max-w-4xl aspect-[3/4] md:aspect-[4/3] rounded-lg shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-[8px] border-white/10 overflow-hidden transition-all duration-700 ease-in-out",
+          getPitchBackground()
+        )}
       >
-        {/* Realistic Grass Texture */}
+        {/* Realistic Grass Pattern */}
         <div 
-          className="absolute inset-0 pointer-events-none opacity-60 mix-blend-overlay"
+          className="absolute inset-0 pointer-events-none opacity-40"
           style={{
-            backgroundImage: `url('https://www.transparenttextures.com/patterns/grass.png')`,
-            backgroundSize: '150px'
-          }}
-        ></div>
-        
-        {/* Lawn Stripes Pattern */}
-        <div 
-          className="absolute inset-0 pointer-events-none opacity-20"
-          style={{
-            backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 50px, rgba(0,0,0,0.2) 50px, rgba(0,0,0,0.2) 100px)`
+            backgroundImage: `
+              repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 50px,
+                rgba(0,0,0,0.1) 50px,
+                rgba(0,0,0,0.1) 100px
+              ),
+              url('https://www.transparenttextures.com/patterns/grass.png')
+            `,
+            backgroundSize: '100% 100%, auto'
           }}
         ></div>
 
-        {/* Pitch Markings */}
-        <div className="absolute inset-4 border-[2px] border-white/60 opacity-80 pointer-events-none">
+        {/* Pitch Markings - Crisp White Lines */}
+        <div className="absolute inset-6 border-[3px] border-white/70 rounded-sm pointer-events-none opacity-90">
           {/* Center Line */}
-          <div className="absolute top-1/2 left-0 right-0 h-[2px] bg-white/60 -translate-y-1/2"></div>
+          <div className="absolute top-1/2 left-0 right-0 h-[3px] bg-white/70 -translate-y-1/2"></div>
           {/* Center Circle */}
-          <div className="absolute top-1/2 left-1/2 w-24 h-24 border-[2px] border-white/60 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute top-1/2 left-1/2 w-32 h-32 border-[3px] border-white/70 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
           {/* Center Dot */}
-          <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-white/80 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute top-1/2 left-1/2 w-3 h-3 bg-white rounded-full -translate-x-1/2 -translate-y-1/2"></div>
           
-          {/* Penalty Areas (Top/Bottom) */}
-          <div className="absolute top-0 left-1/2 w-[60%] h-[15%] border-b-[2px] border-x-[2px] border-white/60 -translate-x-1/2"></div>
-          <div className="absolute top-0 left-1/2 w-[30%] h-[6%] border-b-[2px] border-x-[2px] border-white/60 -translate-x-1/2"></div>
+          {/* Penalty Areas */}
+          {/* Top */}
+          <div className="absolute top-0 left-1/2 w-[40%] h-[16%] border-b-[3px] border-x-[3px] border-white/70 -translate-x-1/2 bg-white/5"></div>
+          <div className="absolute top-0 left-1/2 w-[18%] h-[6%] border-b-[3px] border-x-[3px] border-white/70 -translate-x-1/2"></div>
+          <div className="absolute top-[12%] left-1/2 w-16 h-8 border-b-[3px] border-white/70 rounded-b-full -translate-x-1/2"></div>
           
-          <div className="absolute bottom-0 left-1/2 w-[60%] h-[15%] border-t-[2px] border-x-[2px] border-white/60 -translate-x-1/2"></div>
-          <div className="absolute bottom-0 left-1/2 w-[30%] h-[6%] border-t-[2px] border-x-[2px] border-white/60 -translate-x-1/2"></div>
+          {/* Bottom */}
+          <div className="absolute bottom-0 left-1/2 w-[40%] h-[16%] border-t-[3px] border-x-[3px] border-white/70 -translate-x-1/2 bg-white/5"></div>
+          <div className="absolute bottom-0 left-1/2 w-[18%] h-[6%] border-t-[3px] border-x-[3px] border-white/70 -translate-x-1/2"></div>
+          <div className="absolute bottom-[12%] left-1/2 w-16 h-8 border-t-[3px] border-white/70 rounded-t-full -translate-x-1/2"></div>
           
           {/* Corner Arcs */}
-          <div className="absolute top-0 left-0 w-6 h-6 border-b-[2px] border-r-[2px] border-white/60 rounded-br-full"></div>
-          <div className="absolute top-0 right-0 w-6 h-6 border-b-[2px] border-l-[2px] border-white/60 rounded-bl-full"></div>
-          <div className="absolute bottom-0 left-0 w-6 h-6 border-t-[2px] border-r-[2px] border-white/60 rounded-tr-full"></div>
-          <div className="absolute bottom-0 right-0 w-6 h-6 border-t-[2px] border-l-[2px] border-white/60 rounded-tl-full"></div>
+          <div className="absolute top-0 left-0 w-8 h-8 border-b-[3px] border-r-[3px] border-white/70 rounded-br-full"></div>
+          <div className="absolute top-0 right-0 w-8 h-8 border-b-[3px] border-l-[3px] border-white/70 rounded-bl-full"></div>
+          <div className="absolute bottom-0 left-0 w-8 h-8 border-t-[3px] border-r-[3px] border-white/70 rounded-tr-full"></div>
+          <div className="absolute bottom-0 right-0 w-8 h-8 border-t-[3px] border-l-[3px] border-white/70 rounded-tl-full"></div>
         </div>
 
         {/* Players */}

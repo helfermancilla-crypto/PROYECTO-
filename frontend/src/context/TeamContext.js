@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { FORMATIONS } from '@/lib/formations';
+import { FORMATIONS_11, FORMATIONS_7 } from '@/lib/formations';
 
 const TeamContext = createContext();
 
@@ -13,12 +13,12 @@ export const TeamProvider = ({ children }) => {
     logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg/1200px-FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg.png' // Default placeholder
   });
   const [pitchSettings, setPitchSettings] = useState({
+    mode: '11', // '11' or '7'
     formation: '4-3-3',
     color: 'green', 
     texture: 'striped',
     kitColor: '#ef4444', // Default red kit
     kitNumberColor: '#ffffff', // Default white numbers
-    viewMode: '2d', // '2d' or '3d'
   });
 
   // Load from LocalStorage on mount
@@ -46,7 +46,9 @@ export const TeamProvider = ({ children }) => {
   }, [clubInfo]);
 
   const applyFormation = (formationName) => {
-    const layout = FORMATIONS[formationName];
+    const formations = pitchSettings.mode === '11' ? FORMATIONS_11 : FORMATIONS_7;
+    const layout = formations[formationName];
+    
     if (!layout) return;
 
     // Map existing players to new positions based on index
@@ -63,7 +65,8 @@ export const TeamProvider = ({ children }) => {
 
   const addPlayer = (playerData) => {
     // Find first available spot in current formation or center
-    const currentLayout = FORMATIONS[pitchSettings.formation];
+    const formations = pitchSettings.mode === '11' ? FORMATIONS_11 : FORMATIONS_7;
+    const currentLayout = formations[pitchSettings.formation] || [];
     const index = players.length;
     const defaultPos = index < currentLayout.length 
       ? { x: currentLayout[index].x, y: currentLayout[index].y } 
