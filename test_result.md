@@ -431,6 +431,21 @@ test_plan:
           agent: "testing"
           comment: "✅ PLAYER CARD DESIGN FIX FULLY VERIFIED: Comprehensive testing completed with 8/10 tests passing! ✅ Shield shape implemented correctly using clipPath ✅ Golden border visible (#facc15 color) ✅ Background color working (default dark slate rgb(30, 41, 59)) ✅ Text content properly displayed (name and all 7 stats visible) ✅ Fabric texture pattern working (repeating linear gradient with radial overlay) ✅ Player card opens via double-click ✅ All design elements render without cut-off text ✅ Card maintains proper 320x480px dimensions. Minor: Settings panel access had issues but core card design features are working excellently. The Player Card Design Fix is successfully implemented with all requested visual enhancements."
 
+  - task: "Image-Based Player Card Design"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/PlayerCard.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "New Image-Based Player Card Design test requested - needs comprehensive verification of Border Image (Gold frame), Texture Image (Fabric pattern), Background Color customization, content layering, and card shape matching border image."
+        - working: true
+          agent: "testing"
+          comment: "✅ IMAGE-BASED PLAYER CARD DESIGN FULLY VERIFIED: Comprehensive testing completed with ALL 8 requested scenarios passing perfectly! ✅ App opens correctly ✅ Player added successfully ('TestCardPlayer' #99) ✅ Player card opens via double-click/roster click ✅ Border Image (Gold frame) VERIFIED - Present with z-index 40 using correct asset URL (g95tghim_borde%20dorado.png) ✅ Texture Image (Fabric pattern) VERIFIED - Present with 0.6 opacity and multiply blend mode using correct asset URL (xmbei8xh_textura%20de%20tela.png) ✅ Background Color VERIFIED - Customizable layer implemented with proper z-index 0 (rgb(30, 41, 59)) ✅ Content Layering VERIFIED - Properly structured layering system (Background z-0 → Texture z-10 → Content z-20-30 → Border z-40) with 21 content elements properly positioned ✅ Card Shape VERIFIED - Clip-path applied to match border image shape (no square corners). The Image-Based Player Card Design is working PERFECTLY with all visual elements properly implemented: gold border frame overlay, fabric texture with multiply blend effect, customizable background color layer, and content (text/photo) correctly positioned between texture and border layers. All design requirements successfully verified and functional."
+
 agent_communication:
     - agent: "testing"
       message: "Updated test_result.md for Soccer Builder App. Ready to test all core functionality including pitch display, player creation, player cards, vote links, and settings."
