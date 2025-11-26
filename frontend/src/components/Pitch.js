@@ -57,7 +57,7 @@ const DraggableToken = ({ player, overall, onDoubleClick, updatePos }) => {
       style={{ left: `${player.position.x}%`, top: `${player.position.y}%` }}
     >
       {/* Circular Token */}
-      <div className="relative w-16 h-16 md:w-20 md:h-20 transition-transform group-hover:scale-110">
+      <div className="relative w-12 h-12 md:w-16 md:h-16 transition-transform group-hover:scale-110">
         {/* Main Circle (Photo) - Dynamic Border Color */}
         <div 
           className="w-full h-full rounded-full border-[3px] shadow-xl overflow-hidden bg-slate-800 relative z-10"
@@ -67,14 +67,14 @@ const DraggableToken = ({ player, overall, onDoubleClick, updatePos }) => {
             <img src={player.avatar} alt={player.name} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-slate-700 text-slate-400">
-              <User className="w-8 h-8" />
+              <User className="w-6 h-6 md:w-8 md:h-8" />
             </div>
           )}
         </div>
 
         {/* Rating Badge (Level Number) */}
         <div className={cn(
-          "absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 border-white z-20 shadow-md",
+          "absolute -bottom-1 -right-1 w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center text-[10px] md:text-xs font-bold border-2 border-white z-20 shadow-md",
           overall >= 85 ? "bg-yellow-500 text-black" :
           overall >= 75 ? "bg-emerald-500 text-white" :
           "bg-slate-500 text-white"
@@ -84,7 +84,7 @@ const DraggableToken = ({ player, overall, onDoubleClick, updatePos }) => {
 
         {/* Role Indicator (Tiny dot top left) */}
         <div className={cn(
-          "absolute top-0 left-0 w-4 h-4 rounded-full border-2 border-white shadow-sm z-20",
+          "absolute top-0 left-0 w-3 h-3 md:w-4 md:h-4 rounded-full border-2 border-white shadow-sm z-20",
           player.role === 'GK' ? 'bg-yellow-400' :
           player.role === 'DEF' ? 'bg-blue-500' :
           player.role === 'MID' ? 'bg-emerald-500' : 'bg-rose-500'
@@ -92,8 +92,8 @@ const DraggableToken = ({ player, overall, onDoubleClick, updatePos }) => {
       </div>
 
       {/* Name Pill */}
-      <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-black/80 backdrop-blur-sm px-3 py-1 rounded-full border border-white/20 shadow-lg whitespace-nowrap z-10">
-        <span className="text-[10px] md:text-xs font-bold text-white uppercase tracking-wider">
+      <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-black/80 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/20 shadow-lg whitespace-nowrap z-10">
+        <span className="text-[9px] md:text-[10px] font-bold text-white uppercase tracking-wider">
           {player.nickname || player.name}
         </span>
       </div>
@@ -115,12 +115,12 @@ const Pitch = ({ onPlayerClick }) => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center p-4 overflow-hidden">
+    <div className="w-full h-full flex flex-col items-center justify-center p-2 md:p-4 overflow-hidden">
       <div 
         id="soccer-pitch"
         ref={pitchRef}
         className={cn(
-          "relative w-full max-w-4xl aspect-[3/4] rounded-lg shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-[8px] border-white/10 overflow-hidden transition-all duration-700 ease-in-out",
+          "relative h-full max-h-[85vh] w-auto aspect-[3/4] rounded-lg shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-[6px] border-white/10 overflow-hidden transition-all duration-700 ease-in-out",
           getPitchBackground()
         )}
       >
@@ -143,30 +143,30 @@ const Pitch = ({ onPlayerClick }) => {
         ></div>
 
         {/* Pitch Markings - Crisp White Lines */}
-        <div className="absolute inset-6 border-[3px] border-white/70 rounded-sm pointer-events-none opacity-90">
+        <div className="absolute inset-4 md:inset-6 border-[2px] md:border-[3px] border-white/70 rounded-sm pointer-events-none opacity-90">
           {/* Center Line */}
-          <div className="absolute top-1/2 left-0 right-0 h-[3px] bg-white/70 -translate-y-1/2"></div>
+          <div className="absolute top-1/2 left-0 right-0 h-[2px] md:h-[3px] bg-white/70 -translate-y-1/2"></div>
           {/* Center Circle */}
-          <div className="absolute top-1/2 left-1/2 w-32 h-32 border-[3px] border-white/70 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute top-1/2 left-1/2 w-20 h-20 md:w-32 md:h-32 border-[2px] md:border-[3px] border-white/70 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
           {/* Center Dot */}
-          <div className="absolute top-1/2 left-1/2 w-3 h-3 bg-white rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute top-1/2 left-1/2 w-2 h-2 md:w-3 md:h-3 bg-white rounded-full -translate-x-1/2 -translate-y-1/2"></div>
           
           {/* Penalty Areas */}
           {/* Top */}
-          <div className="absolute top-0 left-1/2 w-[40%] h-[16%] border-b-[3px] border-x-[3px] border-white/70 -translate-x-1/2 bg-white/5"></div>
-          <div className="absolute top-0 left-1/2 w-[18%] h-[6%] border-b-[3px] border-x-[3px] border-white/70 -translate-x-1/2"></div>
-          <div className="absolute top-[12%] left-1/2 w-16 h-8 border-b-[3px] border-white/70 rounded-b-full -translate-x-1/2"></div>
+          <div className="absolute top-0 left-1/2 w-[40%] h-[16%] border-b-[2px] md:border-b-[3px] border-x-[2px] md:border-x-[3px] border-white/70 -translate-x-1/2 bg-white/5"></div>
+          <div className="absolute top-0 left-1/2 w-[18%] h-[6%] border-b-[2px] md:border-b-[3px] border-x-[2px] md:border-x-[3px] border-white/70 -translate-x-1/2"></div>
+          <div className="absolute top-[12%] left-1/2 w-12 h-6 md:w-16 md:h-8 border-b-[2px] md:border-b-[3px] border-white/70 rounded-b-full -translate-x-1/2"></div>
           
           {/* Bottom */}
-          <div className="absolute bottom-0 left-1/2 w-[40%] h-[16%] border-t-[3px] border-x-[3px] border-white/70 -translate-x-1/2 bg-white/5"></div>
-          <div className="absolute bottom-0 left-1/2 w-[18%] h-[6%] border-t-[3px] border-x-[3px] border-white/70 -translate-x-1/2"></div>
-          <div className="absolute bottom-[12%] left-1/2 w-16 h-8 border-t-[3px] border-white/70 rounded-t-full -translate-x-1/2"></div>
+          <div className="absolute bottom-0 left-1/2 w-[40%] h-[16%] border-t-[2px] md:border-t-[3px] border-x-[2px] md:border-x-[3px] border-white/70 -translate-x-1/2 bg-white/5"></div>
+          <div className="absolute bottom-0 left-1/2 w-[18%] h-[6%] border-t-[2px] md:border-t-[3px] border-x-[2px] md:border-x-[3px] border-white/70 -translate-x-1/2"></div>
+          <div className="absolute bottom-[12%] left-1/2 w-12 h-6 md:w-16 md:h-8 border-t-[2px] md:border-t-[3px] border-white/70 rounded-t-full -translate-x-1/2"></div>
           
           {/* Corner Arcs */}
-          <div className="absolute top-0 left-0 w-8 h-8 border-b-[3px] border-r-[3px] border-white/70 rounded-br-full"></div>
-          <div className="absolute top-0 right-0 w-8 h-8 border-b-[3px] border-l-[3px] border-white/70 rounded-bl-full"></div>
-          <div className="absolute bottom-0 left-0 w-8 h-8 border-t-[3px] border-r-[3px] border-white/70 rounded-tr-full"></div>
-          <div className="absolute bottom-0 right-0 w-8 h-8 border-t-[3px] border-l-[3px] border-white/70 rounded-tl-full"></div>
+          <div className="absolute top-0 left-0 w-6 h-6 md:w-8 md:h-8 border-b-[2px] md:border-b-[3px] border-r-[2px] md:border-r-[3px] border-white/70 rounded-br-full"></div>
+          <div className="absolute top-0 right-0 w-6 h-6 md:w-8 md:h-8 border-b-[2px] md:border-b-[3px] border-l-[2px] md:border-l-[3px] border-white/70 rounded-bl-full"></div>
+          <div className="absolute bottom-0 left-0 w-6 h-6 md:w-8 md:h-8 border-t-[2px] md:border-t-[3px] border-r-[2px] md:border-r-[3px] border-white/70 rounded-tr-full"></div>
+          <div className="absolute bottom-0 right-0 w-6 h-6 md:w-8 md:h-8 border-t-[2px] md:border-t-[3px] border-l-[2px] md:border-l-[3px] border-white/70 rounded-tl-full"></div>
         </div>
 
         {/* Players */}
