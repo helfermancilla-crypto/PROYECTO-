@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import html2canvas from 'html2canvas';
-import { FORMATIONS_11, FORMATIONS_7 } from '@/lib/formations';
+import { FORMATIONS } from '@/lib/formations';
 import { cn } from '@/lib/utils';
 import { Users } from 'lucide-react';
 
@@ -142,9 +142,6 @@ const Home = () => {
 
   const teamStats = calculateTeamStats();
 
-  // Get available formations based on mode
-  const availableFormations = pitchSettings.mode === '11' ? FORMATIONS_11 : FORMATIONS_7;
-
   return (
     <div className="min-h-screen bg-slate-950 text-white flex flex-col overflow-hidden">
       {/* Header */}
@@ -262,7 +259,7 @@ const Home = () => {
                   <SelectValue placeholder="Seleccionar Formación" />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-800 border-slate-700 text-white">
-                  {availableFormations && Object.keys(availableFormations).map(fmt => (
+                  {Object.keys(FORMATIONS).map(fmt => (
                     <SelectItem key={fmt} value={fmt}>{fmt}</SelectItem>
                   ))}
                 </SelectContent>
