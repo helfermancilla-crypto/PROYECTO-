@@ -2,72 +2,10 @@ import React, { useRef } from 'react';
 import Draggable from 'react-draggable';
 import { useTeam } from '../context/TeamContext';
 import { cn } from '@/lib/utils';
-
-// Realistic Jersey Component
-const RealisticJersey = ({ color, numberColor, number, stripes }) => {
-  return (
-    <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md filter">
-      <defs>
-        <filter id="jersey-shadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="rgba(0,0,0,0.5)" />
-        </filter>
-        <linearGradient id="jersey-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="rgba(255,255,255,0.2)" />
-          <stop offset="50%" stopColor="rgba(0,0,0,0)" />
-          <stop offset="100%" stopColor="rgba(0,0,0,0.1)" />
-        </linearGradient>
-      </defs>
-      
-      <g filter="url(#jersey-shadow)">
-        {/* Base Shirt Shape */}
-        <path 
-          d="M20,25 L30,10 L40,15 L60,15 L70,10 L80,25 L75,35 L65,30 L65,85 L35,85 L35,30 L25,35 Z" 
-          fill={color} 
-          stroke="rgba(0,0,0,0.1)" 
-          strokeWidth="1"
-        />
-        
-        {/* Stripes Pattern (Optional) */}
-        {stripes && (
-          <path 
-            d="M42,15 L42,85 M50,15 L50,85 M58,15 L58,85" 
-            stroke="rgba(0,0,0,0.15)" 
-            strokeWidth="4" 
-            clipPath="url(#shirt-clip)"
-          />
-        )}
-
-        {/* Collar */}
-        <path d="M40,15 Q50,25 60,15" fill="none" stroke="rgba(0,0,0,0.2)" strokeWidth="2" />
-        
-        {/* Gradient Overlay for 3D effect */}
-        <path 
-          d="M20,25 L30,10 L40,15 L60,15 L70,10 L80,25 L75,35 L65,30 L65,85 L35,85 L35,30 L25,35 Z" 
-          fill="url(#jersey-gradient)" 
-        />
-      </g>
-
-      {/* Number */}
-      <text 
-        x="50" 
-        y="55" 
-        textAnchor="middle" 
-        dominantBaseline="middle" 
-        fill={numberColor} 
-        fontSize="28" 
-        fontWeight="bold" 
-        fontFamily="monospace"
-        style={{ textShadow: '0px 1px 2px rgba(0,0,0,0.5)' }}
-      >
-        {number}
-      </text>
-    </svg>
-  );
-};
+import { User } from 'lucide-react';
 
 const DraggableToken = ({ player, overall, onDoubleClick, updatePos }) => {
   const ref = useRef(null);
-  const { pitchSettings } = useTeam();
   
   const handleMouseDown = (e) => {
     e.preventDefault();
@@ -106,9 +44,6 @@ const DraggableToken = ({ player, overall, onDoubleClick, updatePos }) => {
     document.addEventListener('mouseup', onMouseUp);
   };
 
-  const kitColor = pitchSettings.kitColor || '#ef4444';
-  const numberColor = pitchSettings.kitNumberColor || '#ffffff';
-
   return (
     <div
       ref={ref}
@@ -117,18 +52,32 @@ const DraggableToken = ({ player, overall, onDoubleClick, updatePos }) => {
       className="absolute -translate-x-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing z-20 group"
       style={{ left: `${player.position.x}%`, top: `${player.position.y}%` }}
     >
-      {/* Jersey Token */}
+      {/* Circular Token */}
       <div className="relative w-16 h-16 md:w-20 md:h-20 transition-transform group-hover:scale-110">
-        <RealisticJersey 
-          color={kitColor} 
-          numberColor={numberColor} 
-          number={player.number} 
-          stripes={pitchSettings.texture === 'striped'}
-        />
-        
-        {/* Role Indicator */}
+        {/* Main Circle (Photo) */}
+        <div className="w-full h-full rounded-full border-[3px] border-white shadow-xl overflow-hidden bg-slate-800 relative z-10">
+          {player.avatar ? (
+            <img src={player.avatar} alt={player.name} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-slate-700 text-slate-400">
+              <User className="w-8 h-8" />
+            </div>
+          )}
+        </div>
+
+        {/* Rating Badge (Level Number) */}
         <div className={cn(
-          "absolute top-0 right-2 w-3 h-3 rounded-full border border-white shadow-sm",
+          "absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 border-white z-20 shadow-md",
+          overall >= 85 ? "bg-yellow-500 text-black" :
+          overall >= 75 ? "bg-emerald-500 text-white" :
+          "bg-slate-500 text-white"
+        )}>
+          {overall}
+        </div>
+
+        {/* Role Indicator (Tiny dot top left) */}
+        <div className={cn(
+          "absolute top-0 left-0 w-4 h-4 rounded-full border-2 border-white shadow-sm z-20",
           player.role === 'GK' ? 'bg-yellow-400' :
           player.role === 'DEF' ? 'bg-blue-500' :
           player.role === 'MID' ? 'bg-emerald-500' : 'bg-rose-500'
@@ -136,7 +85,7 @@ const DraggableToken = ({ player, overall, onDoubleClick, updatePos }) => {
       </div>
 
       {/* Name Pill */}
-      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-black/80 backdrop-blur-sm px-3 py-1 rounded-full border border-white/20 shadow-lg whitespace-nowrap z-10">
+      <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-black/80 backdrop-blur-sm px-3 py-1 rounded-full border border-white/20 shadow-lg whitespace-nowrap z-10">
         <span className="text-[10px] md:text-xs font-bold text-white uppercase tracking-wider">
           {player.nickname || player.name}
         </span>
@@ -164,7 +113,7 @@ const Pitch = ({ onPlayerClick }) => {
         id="soccer-pitch"
         ref={pitchRef}
         className={cn(
-          "relative w-full max-w-4xl aspect-[3/4] md:aspect-[4/3] rounded-lg shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-[8px] border-white/10 overflow-hidden transition-all duration-700 ease-in-out",
+          "relative w-full max-w-4xl aspect-[3/4] rounded-lg shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-[8px] border-white/10 overflow-hidden transition-all duration-700 ease-in-out",
           getPitchBackground()
         )}
       >
