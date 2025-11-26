@@ -29,6 +29,7 @@ const Home = () => {
     clubInfo,
     setClubInfo,
     applyFormation,
+    changeMode,
     importTeam
   } = useTeam();
 
@@ -179,7 +180,7 @@ const Home = () => {
               <div className="grid grid-cols-2 gap-2">
                 <Button 
                   variant={pitchSettings.mode === '11' ? 'default' : 'outline'}
-                  onClick={() => setPitchSettings(prev => ({...prev, mode: '11', formation: '4-4-2'}))}
+                  onClick={() => changeMode('11')}
                   className={cn(
                     "h-8 text-xs",
                     pitchSettings.mode === '11' ? "bg-emerald-600 hover:bg-emerald-700" : "border-slate-700 text-slate-400"
@@ -189,7 +190,7 @@ const Home = () => {
                 </Button>
                 <Button 
                   variant={pitchSettings.mode === '7' ? 'default' : 'outline'}
-                  onClick={() => setPitchSettings(prev => ({...prev, mode: '7', formation: '3-2-1'}))}
+                  onClick={() => changeMode('7')}
                   className={cn(
                     "h-8 text-xs",
                     pitchSettings.mode === '7' ? "bg-emerald-600 hover:bg-emerald-700" : "border-slate-700 text-slate-400"

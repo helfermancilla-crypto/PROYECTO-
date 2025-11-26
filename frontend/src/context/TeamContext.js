@@ -104,6 +104,24 @@ export const TeamProvider = ({ children }) => {
     setPitchSettings(prev => ({ ...prev, formation: formationName }));
   };
 
+  const changeMode = (newMode) => {
+    const defaultFormation = newMode === '11' ? '4-4-2' : '3-2-1';
+    const formations = newMode === '11' ? FORMATIONS_11 : FORMATIONS_7;
+    const layout = formations[defaultFormation];
+    
+    if (!layout) return;
+
+    const updatedPlayers = players.map((player, index) => {
+      if (index < layout.length) {
+        return { ...player, position: { x: layout[index].x, y: layout[index].y } };
+      }
+      return player;
+    });
+
+    setPlayers(updatedPlayers);
+    setPitchSettings(prev => ({ ...prev, mode: newMode, formation: defaultFormation }));
+  };
+
   const addPlayer = (playerData) => {
     const formations = pitchSettings.mode === '11' ? FORMATIONS_11 : FORMATIONS_7;
     const currentLayout = formations[pitchSettings.formation] || [];
@@ -192,6 +210,7 @@ export const TeamProvider = ({ children }) => {
       addVote,
       importTeam,
       applyFormation,
+      changeMode,
       loading
     }}>
       {children}
