@@ -4,18 +4,11 @@ import { useTeam } from '../context/TeamContext';
 import { cn } from '@/lib/utils';
 import { User, Shirt } from 'lucide-react';
 
-const PlayerToken = ({ player, onClick, bounds }) => {
+const PlayerToken = ({ player, onDoubleClick, bounds }) => {
   const { updatePlayerPosition } = useTeam();
   const nodeRef = useRef(null);
 
   const handleStop = (e, data) => {
-    // Calculate percentage position to be responsive
-    // But react-draggable works best with pixels. 
-    // We will store pixels for this prototype or relative if we had a fixed container.
-    // For simplicity in this "Builder", we'll stick to the visual position provided by the library
-    // but in a real responsive app, we'd convert x/y to percentages of the parent width/height.
-    
-    // For this prototype, we rely on the visual persistence.
     updatePlayerPosition(player.id, { x: data.x, y: data.y });
   };
 
@@ -37,7 +30,7 @@ const PlayerToken = ({ player, onClick, bounds }) => {
     >
       <div 
         ref={nodeRef}
-        onClick={() => onClick(player)}
+        onDoubleClick={() => onDoubleClick(player)}
         className={cn(
           "absolute flex flex-col items-center justify-center cursor-pointer hover:scale-110 transition-transform z-10 w-16",
           "touch-none" // Important for mobile drag
@@ -81,6 +74,8 @@ const Pitch = ({ onPlayerClick }) => {
       pattern = 'bg-[linear-gradient(90deg,rgba(0,0,0,0.1)_10%,transparent_10%,transparent_50%,rgba(0,0,0,0.1)_50%,rgba(0,0,0,0.1)_60%,transparent_60%,transparent_100%)] bg-[length:100px_100px]';
     } else if (texture === 'checkered') {
       pattern = 'bg-[linear-gradient(45deg,rgba(0,0,0,0.1)_25%,transparent_25%,transparent_75%,rgba(0,0,0,0.1)_75%,rgba(0,0,0,0.1)),linear-gradient(45deg,rgba(0,0,0,0.1)_25%,transparent_25%,transparent_75%,rgba(0,0,0,0.1)_75%,rgba(0,0,0,0.1))] bg-[length:60px_60px] bg-[position:0_0,30px_30px]';
+    } else if (texture === 'plain') {
+      pattern = '';
     }
 
     return `${baseColor} ${pattern}`;
@@ -117,7 +112,7 @@ const Pitch = ({ onPlayerClick }) => {
           <PlayerToken 
             key={player.id} 
             player={player} 
-            onClick={onPlayerClick} 
+            onDoubleClick={onPlayerClick} 
           />
         ))}
       </div>

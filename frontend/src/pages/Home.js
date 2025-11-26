@@ -207,7 +207,7 @@ const Home = () => {
         <Pitch onPlayerClick={handlePlayerClick} />
         
         <div className="absolute bottom-4 text-slate-500 text-xs">
-          Drag players to position • Click to edit
+          Drag players to position • Double-click to edit
         </div>
       </main>
 
