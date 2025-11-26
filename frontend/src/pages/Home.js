@@ -5,14 +5,16 @@ import Pitch from '../components/Pitch';
 import PlayerForm from '../components/PlayerForm';
 import PlayerCard from '../components/PlayerCard';
 import { Button } from "@/components/ui/button";
-import { Settings, Download, Upload, Plus, Share2, Palette, Box, Layers } from 'lucide-react';
+import { Settings, Download, Plus, Shield, Users, Layout } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import html2canvas from 'html2canvas';
+import { FORMATIONS } from '@/lib/formations';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -23,7 +25,9 @@ const Home = () => {
     deletePlayer, 
     pitchSettings, 
     setPitchSettings,
-    importTeam 
+    clubInfo,
+    setClubInfo,
+    applyFormation
   } = useTeam();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -48,7 +52,7 @@ const Home = () => {
       toast.success("Player updated successfully");
     } else {
       addPlayer(data);
-      toast.success("Player added to the pitch");
+      toast.success("Player added to the squad");
     }
     setEditingPlayer(null);
   };
@@ -57,29 +61,6 @@ const Home = () => {
     const url = `${window.location.origin}/vote/${player.id}`;
     navigator.clipboard.writeText(url);
     toast.success("Voting link copied to clipboard!");
-  };
-
-  const handleExportJSON = () => {
-    const data = JSON.stringify({ players, pitchSettings }, null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'soccer_builder_team.json';
-    link.click();
-  };
-
-  const handleImportJSON = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const success = importTeam(event.target.result);
-        if (success) toast.success("Team imported successfully!");
-        else toast.error("Invalid team file.");
-      };
-      reader.readAsText(file);
-    }
   };
 
   const handleExportImage = async () => {
@@ -91,184 +72,195 @@ const Home = () => {
         useCORS: true
       });
       const link = document.createElement('a');
-      link.download = 'my_team.png';
+      link.download = `${clubInfo.name.replace(/\s+/g, '_')}_lineup.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
     }
   };
 
+  const handleLogoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setClubInfo(prev => ({ ...prev, logo: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col">
+    <div className="min-h-screen bg-slate-950 text-white flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="h-16 border-b border-slate-800 bg-slate-900/50 backdrop-blur flex items-center justify-between px-4 md:px-8 sticky top-0 z-50">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-emerald-500 rounded-lg rotate-3 flex items-center justify-center font-bold text-slate-900 shadow-lg shadow-emerald-500/20">SB</div>
-          <h1 className="text-xl font-bold tracking-wider uppercase font-mono hidden md:block">Soccer Builder</h1>
+      <header className="h-20 border-b border-slate-800 bg-slate-900/80 backdrop-blur flex items-center justify-between px-6 md:px-10 z-50 shadow-lg">
+        <div className="flex items-center gap-4">
+          <div className="relative w-12 h-12 group cursor-pointer">
+            <img 
+              src={clubInfo.logo} 
+              alt="Club Logo" 
+              className="w-full h-full object-contain drop-shadow-md transition-transform group-hover:scale-110" 
+            />
+            <Input 
+              type="file" 
+              accept="image/*" 
+              className="absolute inset-0 opacity-0 cursor-pointer"
+              onChange={handleLogoUpload}
+            />
+          </div>
+          <div>
+            <Input 
+              value={clubInfo.name}
+              onChange={(e) => setClubInfo(prev => ({ ...prev, name: e.target.value }))}
+              className="bg-transparent border-none text-xl md:text-2xl font-bold uppercase tracking-widest text-white placeholder:text-slate-600 focus-visible:ring-0 p-0 h-auto font-mono"
+              placeholder="CLUB NAME"
+            />
+            <p className="text-xs text-emerald-500 font-bold tracking-wider uppercase">Official Lineup</p>
+          </div>
         </div>
         
-        <div className="flex items-center gap-2">
-          {/* View Mode Toggle */}
-          <div className="flex items-center gap-2 bg-slate-800 rounded-full p-1 border border-slate-700 mr-2">
-            <Button 
-              size="sm" 
-              variant={pitchSettings.viewMode === '2d' ? 'secondary' : 'ghost'}
-              onClick={() => setPitchSettings(prev => ({...prev, viewMode: '2d'}))}
-              className="h-7 rounded-full px-3 text-xs"
-            >
-              <Layers className="w-3 h-3 mr-1" /> 2D
-            </Button>
-            <Button 
-              size="sm" 
-              variant={pitchSettings.viewMode === '3d' ? 'secondary' : 'ghost'}
-              onClick={() => setPitchSettings(prev => ({...prev, viewMode: '3d'}))}
-              className="h-7 rounded-full px-3 text-xs"
-            >
-              <Box className="w-3 h-3 mr-1" /> 3D
-            </Button>
-          </div>
-
-          <Button 
-            onClick={() => { setEditingPlayer(null); setIsFormOpen(true); }} 
-            className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-900/20"
-          >
-            <Plus className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">Add Player</span>
-          </Button>
-          
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors" aria-label="Settings">
-                <Settings className="w-5 h-5" />
-                <span className="sr-only">Settings</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent className="bg-slate-900 border-slate-800 text-white">
-              <SheetHeader>
-                <SheetTitle className="text-emerald-400 text-xl font-bold uppercase tracking-wider">Team Settings</SheetTitle>
-              </SheetHeader>
-              <div className="py-6 space-y-8">
-                
-                {/* Kit Settings */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-slate-300 font-bold uppercase text-xs tracking-wider">
-                    <Palette className="w-4 h-4" /> Kit Customization
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Jersey Color</Label>
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded border border-slate-600 shadow-sm" style={{backgroundColor: pitchSettings.kitColor}}></div>
-                        <Input 
-                          type="color" 
-                          value={pitchSettings.kitColor}
-                          onChange={(e) => setPitchSettings(prev => ({...prev, kitColor: e.target.value}))}
-                          className="w-full h-8 p-1 bg-slate-800 border-slate-700"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Number Color</Label>
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded border border-slate-600 shadow-sm" style={{backgroundColor: pitchSettings.kitNumberColor}}></div>
-                        <Input 
-                          type="color" 
-                          value={pitchSettings.kitNumberColor}
-                          onChange={(e) => setPitchSettings(prev => ({...prev, kitNumberColor: e.target.value}))}
-                          className="w-full h-8 p-1 bg-slate-800 border-slate-700"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Pitch Settings */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-slate-300 font-bold uppercase text-xs tracking-wider">
-                    <Settings className="w-4 h-4" /> Pitch Options
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Pitch Mode</Label>
-                    <Select 
-                      value={pitchSettings.mode} 
-                      onValueChange={(v) => setPitchSettings(prev => ({...prev, mode: v}))}
-                    >
-                      <SelectTrigger className="bg-slate-800 border-slate-700">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-800 border-slate-700 text-white">
-                        <SelectItem value="11">11 vs 11 (Full)</SelectItem>
-                        <SelectItem value="7">7 vs 7 (Small)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Pitch Color</Label>
-                    <Select 
-                      value={pitchSettings.color} 
-                      onValueChange={(v) => setPitchSettings(prev => ({...prev, color: v}))}
-                    >
-                      <SelectTrigger className="bg-slate-800 border-slate-700">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-800 border-slate-700 text-white">
-                        <SelectItem value="green">Classic Green</SelectItem>
-                        <SelectItem value="red">Inferno Red</SelectItem>
-                        <SelectItem value="blue">Night Blue</SelectItem>
-                        <SelectItem value="black">Obsidian</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>View Mode</Label>
-                    <div className="flex items-center space-x-2">
-                      <Switch 
-                        id="3d-mode"
-                        checked={pitchSettings.viewMode === '3d'}
-                        onCheckedChange={(checked) => setPitchSettings(prev => ({...prev, viewMode: checked ? '3d' : '2d'}))}
-                      />
-                      <Label htmlFor="3d-mode">Enable 3D Perspective</Label>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-slate-800 space-y-3">
-                  <Label className="text-slate-400 uppercase text-xs font-bold tracking-wider">Data Management</Label>
-                  <Button onClick={handleExportJSON} variant="outline" className="w-full justify-start border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white">
-                    <Download className="w-4 h-4 mr-2" /> Export Team JSON
-                  </Button>
-                  <div className="relative">
-                    <Button variant="outline" className="w-full justify-start border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white">
-                      <Upload className="w-4 h-4 mr-2" /> Import Team JSON
-                    </Button>
-                    <input 
-                      type="file" 
-                      accept=".json" 
-                      onChange={handleImportJSON}
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                    />
-                  </div>
-                  <Button onClick={handleExportImage} variant="outline" className="w-full justify-start border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white">
-                    <Share2 className="w-4 h-4 mr-2" /> Download Pitch Image
-                  </Button>
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
+        <div className="flex items-center gap-3">
+           <Button onClick={handleExportImage} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-900/20">
+             <Download className="w-4 h-4 mr-2" /> Export
+           </Button>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-hidden relative flex flex-col items-center justify-center bg-slate-950">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-900/20 via-slate-950 to-slate-950 pointer-events-none"></div>
+      {/* Main Layout */}
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         
-        <Pitch onPlayerClick={handlePlayerClick} />
-        
-        <div className="absolute bottom-4 text-slate-500 text-xs">
-          Drag players to position • Double-click to edit
+        {/* Left: Pitch Area */}
+        <div className="flex-1 relative bg-slate-950 flex items-center justify-center overflow-hidden">
+          {/* Background Ambience */}
+          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1522770179533-24471fcdba45?q=80&w=2560&auto=format&fit=crop')] bg-cover bg-center opacity-10 blur-sm"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950"></div>
+          
+          <Pitch onPlayerClick={handlePlayerClick} />
         </div>
-      </main>
+
+        {/* Right: Controls & Roster */}
+        <div className="w-full md:w-[350px] lg:w-[400px] bg-slate-900 border-l border-slate-800 flex flex-col z-20 shadow-2xl">
+          
+          {/* Controls Section */}
+          <div className="p-6 space-y-6 border-b border-slate-800 bg-slate-900/50">
+            <div className="space-y-2">
+              <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                <Layout className="w-3 h-3" /> Formation
+              </Label>
+              <Select 
+                value={pitchSettings.formation} 
+                onValueChange={applyFormation}
+              >
+                <SelectTrigger className="bg-slate-800 border-slate-700 text-white h-10">
+                  <SelectValue placeholder="Select Formation" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                  {Object.keys(FORMATIONS).map(fmt => (
+                    <SelectItem key={fmt} value={fmt}>{fmt}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => { setEditingPlayer(null); setIsFormOpen(true); }} 
+                className="flex-1 bg-slate-800 hover:bg-slate-700 text-white border border-slate-700"
+              >
+                <Plus className="w-4 h-4 mr-2" /> Add Player
+              </Button>
+              
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="icon" className="border-slate-700 bg-slate-800 text-slate-300 hover:text-white">
+                    <Settings className="w-5 h-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent className="bg-slate-900 border-slate-800 text-white">
+                  <SheetHeader>
+                    <SheetTitle className="text-emerald-400">Visual Settings</SheetTitle>
+                  </SheetHeader>
+                  <div className="py-6 space-y-4">
+                    <div className="space-y-2">
+                      <Label>Pitch Color</Label>
+                      <Select 
+                        value={pitchSettings.color} 
+                        onValueChange={(v) => setPitchSettings(prev => ({...prev, color: v}))}
+                      >
+                        <SelectTrigger className="bg-slate-800 border-slate-700">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                          <SelectItem value="green">Classic Green</SelectItem>
+                          <SelectItem value="red">Inferno Red</SelectItem>
+                          <SelectItem value="blue">Night Blue</SelectItem>
+                          <SelectItem value="black">Obsidian</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+          </div>
+
+          {/* Roster List */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="px-6 py-3 bg-slate-800/50 border-b border-slate-800 flex justify-between items-center">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                <Users className="w-3 h-3" /> Squad List
+              </span>
+              <span className="text-xs font-mono text-emerald-500">{players.length} Players</span>
+            </div>
+            
+            <ScrollArea className="flex-1 p-4">
+              <div className="space-y-2">
+                {players.map(player => (
+                  <div 
+                    key={player.id}
+                    onClick={() => handlePlayerClick(player)}
+                    className="flex items-center gap-3 p-2 rounded-lg bg-slate-800/40 border border-slate-800 hover:bg-slate-800 hover:border-emerald-500/50 transition-all cursor-pointer group"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-slate-700 overflow-hidden border border-slate-600">
+                      {player.avatar ? (
+                        <img src={player.avatar} alt={player.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-500 text-xs font-bold">{player.number}</div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-center">
+                        <p className="text-sm font-bold text-white truncate group-hover:text-emerald-400 transition-colors">{player.name}</p>
+                        <span className="text-xs font-mono text-yellow-500 font-bold">
+                          {Object.values(player.stats || {}).length 
+                            ? Math.round(Object.values(player.stats).reduce((a, b) => a + b, 0) / Object.values(player.stats).length) 
+                            : 75}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-slate-500">
+                        <span className={cn(
+                          "w-2 h-2 rounded-full",
+                          player.role === 'GK' ? 'bg-yellow-400' :
+                          player.role === 'DEF' ? 'bg-blue-500' :
+                          player.role === 'MID' ? 'bg-emerald-500' : 'bg-rose-500'
+                        )}></span>
+                        <span>{player.role}</span>
+                        <span className="text-slate-600">•</span>
+                        <span>#{player.number}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                {players.length === 0 && (
+                  <div className="text-center py-10 text-slate-600 text-sm">
+                    No players yet.<br/>Click "Add Player" to start.
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          </div>
+        </div>
+      </div>
 
       {/* Modals */}
       <PlayerForm 
@@ -289,5 +281,10 @@ const Home = () => {
     </div>
   );
 };
+
+// Helper for class names in the list
+function cn(...classes) {
+  return classes.filter(Boolean).join(' ');
+}
 
 export default Home;

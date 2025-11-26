@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { FORMATIONS } from '@/lib/formations';
 
 const TeamContext = createContext();
 
@@ -7,22 +8,25 @@ export const useTeam = () => useContext(TeamContext);
 
 export const TeamProvider = ({ children }) => {
   const [players, setPlayers] = useState([]);
+  const [clubInfo, setClubInfo] = useState({
+    name: 'DREAM TEAM FC',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg/1200px-FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg.png' // Default placeholder
+  });
   const [pitchSettings, setPitchSettings] = useState({
-    mode: '11', // '11' or '7'
-    color: 'green', // 'green', 'red', 'blue', 'black'
-    texture: 'striped', // 'striped', 'checkered', 'plain'
-    kitColor: '#ef4444', // Default red kit
-    kitNumberColor: '#ffffff', // Default white numbers
-    viewMode: '2d', // '2d' or '3d'
+    formation: '4-3-3',
+    color: 'green', 
+    texture: 'striped',
   });
 
   // Load from LocalStorage on mount
   useEffect(() => {
     const savedPlayers = localStorage.getItem('soccerBuilder_players');
     const savedPitch = localStorage.getItem('soccerBuilder_pitch');
+    const savedClub = localStorage.getItem('soccerBuilder_club');
     
     if (savedPlayers) setPlayers(JSON.parse(savedPlayers));
     if (savedPitch) setPitchSettings(JSON.parse(savedPitch));
+    if (savedClub) setClubInfo(JSON.parse(savedClub));
   }, []);
 
   // Save to LocalStorage whenever state changes
@@ -34,12 +38,42 @@ export const TeamProvider = ({ children }) => {
     localStorage.setItem('soccerBuilder_pitch', JSON.stringify(pitchSettings));
   }, [pitchSettings]);
 
+  useEffect(() => {
+    localStorage.setItem('soccerBuilder_club', JSON.stringify(clubInfo));
+  }, [clubInfo]);
+
+  const applyFormation = (formationName) => {
+    const layout = FORMATIONS[formationName];
+    if (!layout) return;
+
+    // Map existing players to new positions based on index
+    // This is a simple mapping. In a real app, you might match by role.
+    const updatedPlayers = players.map((player, index) => {
+      if (index < layout.length) {
+        return { ...player, position: { x: layout[index].x, y: layout[index].y } };
+      }
+      // If we have more players than the formation (subs), keep them or move to bench
+      // For now, we just leave them where they are or stack them
+      return player;
+    });
+
+    setPlayers(updatedPlayers);
+    setPitchSettings(prev => ({ ...prev, formation: formationName }));
+  };
+
   const addPlayer = (playerData) => {
+    // Find first available spot in current formation or center
+    const currentLayout = FORMATIONS[pitchSettings.formation];
+    const index = players.length;
+    const defaultPos = index < currentLayout.length 
+      ? { x: currentLayout[index].x, y: currentLayout[index].y } 
+      : { x: 50, y: 50 };
+
     const newPlayer = {
       id: uuidv4(),
       ...playerData,
-      position: { x: 50, y: 50 }, // Default center
-      votes: [], // Array of vote objects
+      position: defaultPos,
+      votes: [],
     };
     setPlayers([...players, newPlayer]);
   };
@@ -60,14 +94,11 @@ export const TeamProvider = ({ children }) => {
     setPlayers(players.map(p => {
       if (p.id === playerId) {
         const newVotes = [...(p.votes || []), voteStats];
-        
-        // Recalculate averages
         const statsKeys = Object.keys(voteStats);
         const newStats = { ...p.stats };
         
         statsKeys.forEach(key => {
           const total = newVotes.reduce((sum, v) => sum + parseInt(v[key]), 0);
-          const initialValue = parseInt(p.initialStats?.[key] || p.stats[key]); 
           newStats[key] = Math.round(total / newVotes.length);
         });
 
@@ -82,6 +113,7 @@ export const TeamProvider = ({ children }) => {
       const data = JSON.parse(jsonData);
       if (data.players) setPlayers(data.players);
       if (data.pitchSettings) setPitchSettings(data.pitchSettings);
+      if (data.clubInfo) setClubInfo(data.clubInfo);
       return true;
     } catch (e) {
       console.error("Import failed", e);
@@ -94,12 +126,15 @@ export const TeamProvider = ({ children }) => {
       players,
       pitchSettings,
       setPitchSettings,
+      clubInfo,
+      setClubInfo,
       addPlayer,
       updatePlayer,
       updatePlayerPosition,
       deletePlayer,
       addVote,
-      importTeam
+      importTeam,
+      applyFormation
     }}>
       {children}
     </TeamContext.Provider>
