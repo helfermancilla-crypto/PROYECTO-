@@ -315,10 +315,8 @@ metadata:
   test_sequence: 1
 
 test_plan:
-  current_focus: 
-    - "Player Creation Bug Fix"
-  stuck_tasks: 
-    - "Player Creation Bug Fix"
+  current_focus: []
+  stuck_tasks: []
   test_all: false
   test_priority: "critical_first"
 
