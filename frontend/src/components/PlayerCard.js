@@ -24,9 +24,10 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
 
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: null,
-        scale: 3, // Higher quality
+        scale: 3,
         useCORS: true,
-        logging: false
+        logging: false,
+        allowTaint: true,
       });
       const link = document.createElement('a');
       link.download = `${player.name}_card.png`;
@@ -42,6 +43,10 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
   // Card Colors from Settings
   const cardColor = pitchSettings.cardColor || '#1e293b';
   
+  // Assets provided by user
+  const TEXTURE_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/xmbei8xh_textura%20de%20tela.png";
+  const BORDER_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/g95tghim_borde%20dorado.png";
+
   // Stats Mapping
   const displayStats = [
     { label: 'PAC', val: player.stats.speed },
@@ -62,51 +67,47 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
           {/* The Card */}
           <div 
             ref={cardRef}
-            className="relative w-[320px] h-[480px] overflow-hidden"
+            className="relative w-[380px] h-[500px] overflow-hidden"
             style={{
-              // Standard FIFA Card Shape
-              clipPath: "path('M 50 0 L 270 0 C 290 0 320 20 320 50 L 320 350 C 320 450 160 480 160 480 C 160 480 0 450 0 350 L 0 50 C 0 20 30 0 50 0 Z')",
-              backgroundColor: cardColor,
-              boxShadow: "0 0 20px rgba(0,0,0,0.5)"
+              // Using a clip-path that matches the border image shape to trim the background
+              clipPath: "path('M 50 15 L 330 15 C 330 15 330 40 365 55 L 365 350 C 365 450 190 485 190 485 C 190 485 15 450 15 350 L 15 55 C 50 40 50 15 50 15 Z')",
+              boxShadow: "0 0 30px rgba(0,0,0,0.5)"
             }}
           >
-            {/* 1. Background Texture (Fabric/Silk) */}
+            {/* 1. Base Color Layer (User Customizable) */}
             <div 
-              className="absolute inset-0 z-0 opacity-40 mix-blend-overlay"
+              className="absolute inset-0 z-0"
+              style={{ backgroundColor: cardColor }}
+            ></div>
+
+            {/* 2. Texture Layer (Fabric Image) */}
+            <div 
+              className="absolute inset-0 z-10 opacity-60 mix-blend-multiply"
               style={{
-                backgroundImage: `
-                  repeating-linear-gradient(120deg, rgba(255,255,255,0.1) 0px, rgba(255,255,255,0.1) 1px, transparent 1px, transparent 10px),
-                  radial-gradient(circle at 50% 0%, rgba(255,255,255,0.4) 0%, transparent 70%)
-                `
+                backgroundImage: `url('${TEXTURE_URL}')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                filter: 'contrast(1.2) brightness(1.1)' // Enhance texture details
               }}
             ></div>
 
-            {/* 2. Golden Border (Inner) */}
-            <div 
-              className="absolute inset-0 z-10 pointer-events-none"
-              style={{
-                padding: '8px',
-                clipPath: "path('M 50 0 L 270 0 C 290 0 320 20 320 50 L 320 350 C 320 450 160 480 160 480 C 160 480 0 450 0 350 L 0 50 C 0 20 30 0 50 0 Z')",
-              }}
-            >
-              <div className="w-full h-full border-[3px] border-[#facc15] opacity-90 rounded-t-[2rem] rounded-b-[5rem]"></div>
-            </div>
-
             {/* 3. Content Layer */}
-            <div className="absolute inset-0 z-20 flex flex-col p-5">
+            <div className="absolute inset-0 z-20 flex flex-col p-8 pt-12">
               
               {/* Top Row: Rating/Info + Image */}
               <div className="flex flex-1 relative">
                 
                 {/* Left Column: Rating, Pos, Nation, Club */}
-                <div className="flex flex-col items-center w-[25%] pt-6 space-y-1 z-30">
-                  <span className="text-5xl font-bold text-[#facc15] font-mono leading-[0.8] drop-shadow-md">{overall}</span>
-                  <span className="text-xl font-bold text-[#facc15] uppercase tracking-wider drop-shadow-sm">{player.role}</span>
+                <div className="flex flex-col items-center w-[25%] pt-4 space-y-2 z-30">
+                  <div className="flex flex-col items-center leading-none">
+                    <span className="text-5xl font-bold text-[#fde047] font-mono drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">{overall}</span>
+                    <span className="text-xl font-bold text-[#fde047] uppercase tracking-wider drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">{player.role}</span>
+                  </div>
                   
-                  <div className="w-full h-[1px] bg-[#facc15]/50 my-1"></div>
+                  <div className="w-full h-[1px] bg-[#fde047]/40 my-1"></div>
                   
                   {/* Nation */}
-                  <div className="w-8 h-5 relative shadow-sm border border-[#facc15]/30 overflow-hidden">
+                  <div className="w-10 h-6 relative shadow-md border border-[#fde047]/30 overflow-hidden rounded-[2px]">
                     {player.nation ? (
                       <img src={player.nation} alt="Nation" className="w-full h-full object-cover" />
                     ) : (
@@ -115,48 +116,61 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
                   </div>
 
                   {/* Club */}
-                  <div className="w-8 h-8 relative mt-1">
-                     <img src={clubInfo.logo} alt="Club" className="w-full h-full object-contain drop-shadow-md" />
+                  <div className="w-10 h-10 relative mt-1">
+                     <img src={clubInfo.logo} alt="Club" className="w-full h-full object-contain drop-shadow-lg" />
                   </div>
                 </div>
 
-                {/* Player Image (Absolute to break out of grid if needed) */}
-                <div className="absolute top-4 right-[-10px] w-[240px] h-[280px] z-20">
+                {/* Player Image */}
+                <div className="absolute top-2 right-[-20px] w-[260px] h-[300px] z-20">
                   {player.avatar ? (
                     <img 
                       src={player.avatar} 
                       alt={player.name} 
-                      className="w-full h-full object-contain drop-shadow-[0_5px_15px_rgba(0,0,0,0.5)]" 
+                      className="w-full h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)]" 
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-white/10">
-                      <span className="text-8xl">?</span>
+                      <span className="text-9xl">?</span>
                     </div>
                   )}
                 </div>
               </div>
 
               {/* Bottom Row: Name & Stats */}
-              <div className="mt-auto relative z-30">
+              <div className="mt-auto relative z-30 pb-6">
                 {/* Name Plate */}
-                <div className="text-center mb-2">
-                  <h2 className="text-3xl font-bold text-white uppercase tracking-widest font-sans drop-shadow-lg truncate border-b-2 border-[#facc15]/50 pb-1 mx-2">
+                <div className="text-center mb-3">
+                  <h2 className="text-4xl font-bold text-[#fde047] uppercase tracking-widest font-sans drop-shadow-[0_3px_3px_rgba(0,0,0,0.8)] truncate">
                     {player.nickname || player.name}
                   </h2>
+                  <div className="h-[2px] w-1/2 mx-auto bg-gradient-to-r from-transparent via-[#fde047] to-transparent opacity-70"></div>
                 </div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-2 gap-x-4 gap-y-0 px-2 pb-4">
+                <div className="grid grid-cols-2 gap-x-8 gap-y-1 px-4">
                   {displayStats.map((stat, i) => (
-                    <div key={i} className="flex items-center justify-start gap-2">
-                      <span className="text-xl font-bold text-white font-mono drop-shadow-sm">{stat.val}</span>
-                      <span className="text-sm font-bold text-[#facc15] uppercase tracking-wider drop-shadow-sm">{stat.label}</span>
+                    <div key={i} className="flex items-center justify-start gap-3">
+                      <span className="text-2xl font-bold text-white font-mono drop-shadow-md">{stat.val}</span>
+                      <span className="text-sm font-bold text-[#fde047] uppercase tracking-wider drop-shadow-md">{stat.label}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
             </div>
+
+            {/* 4. Border Layer (Top) */}
+            <div 
+              className="absolute inset-0 z-40 pointer-events-none"
+              style={{
+                backgroundImage: `url('${BORDER_URL}')`,
+                backgroundSize: '100% 100%',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+              }}
+            ></div>
+
           </div>
         </div>
 
