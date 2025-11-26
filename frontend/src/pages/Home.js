@@ -5,11 +5,12 @@ import Pitch from '../components/Pitch';
 import PlayerForm from '../components/PlayerForm';
 import PlayerCard from '../components/PlayerCard';
 import { Button } from "@/components/ui/button";
-import { Settings, Download, Upload, Plus, Share2, Palette } from 'lucide-react';
+import { Settings, Download, Upload, Plus, Share2, Palette, Box, Layers } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import html2canvas from 'html2canvas';
 
@@ -84,7 +85,11 @@ const Home = () => {
   const handleExportImage = async () => {
     const element = document.getElementById('soccer-pitch');
     if (element) {
-      const canvas = await html2canvas(element, { scale: 2 });
+      const canvas = await html2canvas(element, { 
+        scale: 2,
+        backgroundColor: null,
+        useCORS: true
+      });
       const link = document.createElement('a');
       link.download = 'my_team.png';
       link.href = canvas.toDataURL('image/png');
@@ -102,6 +107,26 @@ const Home = () => {
         </div>
         
         <div className="flex items-center gap-2">
+          {/* View Mode Toggle */}
+          <div className="flex items-center gap-2 bg-slate-800 rounded-full p-1 border border-slate-700 mr-2">
+            <Button 
+              size="sm" 
+              variant={pitchSettings.viewMode === '2d' ? 'secondary' : 'ghost'}
+              onClick={() => setPitchSettings(prev => ({...prev, viewMode: '2d'}))}
+              className="h-7 rounded-full px-3 text-xs"
+            >
+              <Layers className="w-3 h-3 mr-1" /> 2D
+            </Button>
+            <Button 
+              size="sm" 
+              variant={pitchSettings.viewMode === '3d' ? 'secondary' : 'ghost'}
+              onClick={() => setPitchSettings(prev => ({...prev, viewMode: '3d'}))}
+              className="h-7 rounded-full px-3 text-xs"
+            >
+              <Box className="w-3 h-3 mr-1" /> 3D
+            </Button>
+          </div>
+
           <Button 
             onClick={() => { setEditingPlayer(null); setIsFormOpen(true); }} 
             className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-900/20"
@@ -196,20 +221,15 @@ const Home = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Texture</Label>
-                    <Select 
-                      value={pitchSettings.texture} 
-                      onValueChange={(v) => setPitchSettings(prev => ({...prev, texture: v}))}
-                    >
-                      <SelectTrigger className="bg-slate-800 border-slate-700">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-800 border-slate-700 text-white">
-                        <SelectItem value="striped">Striped</SelectItem>
-                        <SelectItem value="checkered">Checkered</SelectItem>
-                        <SelectItem value="plain">Plain</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label>View Mode</Label>
+                    <div className="flex items-center space-x-2">
+                      <Switch 
+                        id="3d-mode"
+                        checked={pitchSettings.viewMode === '3d'}
+                        onCheckedChange={(checked) => setPitchSettings(prev => ({...prev, viewMode: checked ? '3d' : '2d'}))}
+                      />
+                      <Label htmlFor="3d-mode">Enable 3D Perspective</Label>
+                    </div>
                   </div>
                 </div>
 

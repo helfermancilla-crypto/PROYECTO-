@@ -13,6 +13,7 @@ export const TeamProvider = ({ children }) => {
     texture: 'striped', // 'striped', 'checkered', 'plain'
     kitColor: '#ef4444', // Default red kit
     kitNumberColor: '#ffffff', // Default white numbers
+    viewMode: '2d', // '2d' or '3d'
   });
 
   // Load from LocalStorage on mount
