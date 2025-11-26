@@ -3,36 +3,52 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { useTeam } from '../context/TeamContext';
-import { CheckCircle2, ArrowLeft } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
+import axios from 'axios';
+import { toast } from "sonner";
+
+const API_URL = process.env.REACT_APP_BACKEND_URL + '/api';
 
 const VotingPage = () => {
   const { playerId } = useParams();
   const navigate = useNavigate();
-  const { players, addVote } = useTeam();
   const [player, setPlayer] = useState(null);
   const [votes, setVotes] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // In a real app, we'd fetch from DB. 
-    // Here we look in local storage via context.
-    // If the user is on a different device, this won't work (as per prompt constraints/solution).
-    // We will simulate "loading" the player data.
-    const found = players.find(p => p.id === playerId);
-    if (found) {
-      setPlayer(found);
-      setVotes(found.stats); // Initialize with current stats
+    const fetchPlayer = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/player/${playerId}`);
+        setPlayer(response.data);
+        setVotes(response.data.stats);
+      } catch (error) {
+        console.error("Error fetching player:", error);
+        toast.error("No se pudo cargar el jugador. Verifica el enlace.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (playerId) {
+      fetchPlayer();
     }
-  }, [playerId, players]);
+  }, [playerId]);
 
   const handleVoteChange = (stat, value) => {
     setVotes(prev => ({ ...prev, [stat]: value[0] }));
   };
 
-  const handleSubmit = () => {
-    addVote(playerId, votes);
-    setSubmitted(true);
+  const handleSubmit = async () => {
+    try {
+      await axios.post(`${API_URL}/player/${playerId}/vote`, votes);
+      setSubmitted(true);
+      toast.success("¡Voto enviado correctamente!");
+    } catch (error) {
+      console.error("Error submitting vote:", error);
+      toast.error("Error al enviar el voto.");
+    }
   };
 
   const statLabels = {
@@ -44,6 +60,14 @@ const VotingPage = () => {
     stamina: 'Físico',
     heading: 'Cabezazo'
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
+      </div>
+    );
+  }
 
   if (!player) {
     return (
@@ -67,7 +91,7 @@ const VotingPage = () => {
             </div>
             <h2 className="text-2xl font-bold text-white">¡Voto Registrado!</h2>
             <p className="text-slate-400">
-              Gracias por votar en las estadísticas de {player.name}. Los promedios se han actualizado localmente.
+              Gracias por votar en las estadísticas de {player.name}. Los promedios se han actualizado en la base de datos.
             </p>
             <Button onClick={() => navigate('/')} className="w-full bg-slate-800 hover:bg-slate-700">
               Volver al Campo

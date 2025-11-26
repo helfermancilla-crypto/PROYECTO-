@@ -1,9 +1,13 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { FORMATIONS_11, FORMATIONS_7 } from '@/lib/formations';
+import axios from 'axios';
+import { toast } from "sonner";
 
 const TeamContext = createContext();
 
 export const useTeam = () => useContext(TeamContext);
+
+const API_URL = process.env.REACT_APP_BACKEND_URL + '/api';
 
 export const TeamProvider = ({ children }) => {
   const [players, setPlayers] = useState([]);
@@ -12,7 +16,6 @@ export const TeamProvider = ({ children }) => {
     logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg/1200px-FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg.png'
   });
   
-  // Default settings
   const defaultSettings = {
     mode: '11',
     formation: '4-3-3',
@@ -24,40 +27,65 @@ export const TeamProvider = ({ children }) => {
   };
 
   const [pitchSettings, setPitchSettings] = useState(defaultSettings);
+  const [loading, setLoading] = useState(true);
 
-  // Load from LocalStorage on mount
+  // Load from API on mount
   useEffect(() => {
-    try {
-      const savedPlayers = localStorage.getItem('soccerBuilder_players');
-      const savedPitch = localStorage.getItem('soccerBuilder_pitch');
-      const savedClub = localStorage.getItem('soccerBuilder_club');
-      
-      if (savedPlayers) setPlayers(JSON.parse(savedPlayers));
-      
-      if (savedPitch) {
-        // Merge saved settings with defaults to ensure new fields (like mode) exist
-        const parsedPitch = JSON.parse(savedPitch);
-        setPitchSettings(prev => ({ ...prev, ...parsedPitch }));
+    const fetchTeam = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/team`);
+        const data = response.data;
+        
+        if (data) {
+          setPlayers(data.players || []);
+          setPitchSettings(prev => ({ ...prev, ...data.pitchSettings }));
+          setClubInfo(prev => ({ ...prev, ...data.clubInfo }));
+        }
+      } catch (error) {
+        console.error("Error fetching team:", error);
+        toast.error("Error al cargar el equipo desde el servidor.");
+      } finally {
+        setLoading(false);
       }
-      
-      if (savedClub) setClubInfo(JSON.parse(savedClub));
+    };
+
+    fetchTeam();
+  }, []);
+
+  // Save to API whenever state changes (Debounced ideally, but simple effect for now)
+  // We use a ref to skip the initial render save to avoid overwriting server data with defaults before load
+  const isLoaded = React.useRef(false);
+
+  useEffect(() => {
+    if (!loading) {
+      isLoaded.current = true;
+    }
+  }, [loading]);
+
+  const saveTeam = useCallback(async (currentPlayers, currentPitch, currentClub) => {
+    if (!isLoaded.current) return;
+    
+    try {
+      await axios.post(`${API_URL}/team`, {
+        players: currentPlayers,
+        pitchSettings: currentPitch,
+        clubInfo: currentClub
+      });
     } catch (error) {
-      console.error("Error loading from localStorage:", error);
+      console.error("Error saving team:", error);
     }
   }, []);
 
-  // Save to LocalStorage whenever state changes
+  // Trigger save on changes
   useEffect(() => {
-    localStorage.setItem('soccerBuilder_players', JSON.stringify(players));
-  }, [players]);
+    if (isLoaded.current) {
+      const timeoutId = setTimeout(() => {
+        saveTeam(players, pitchSettings, clubInfo);
+      }, 1000); // 1 second debounce
+      return () => clearTimeout(timeoutId);
+    }
+  }, [players, pitchSettings, clubInfo, saveTeam]);
 
-  useEffect(() => {
-    localStorage.setItem('soccerBuilder_pitch', JSON.stringify(pitchSettings));
-  }, [pitchSettings]);
-
-  useEffect(() => {
-    localStorage.setItem('soccerBuilder_club', JSON.stringify(clubInfo));
-  }, [clubInfo]);
 
   const applyFormation = (formationName) => {
     const formations = pitchSettings.mode === '11' ? FORMATIONS_11 : FORMATIONS_7;
@@ -77,7 +105,6 @@ export const TeamProvider = ({ children }) => {
   };
 
   const addPlayer = (playerData) => {
-    console.log("Adding player:", playerData);
     const formations = pitchSettings.mode === '11' ? FORMATIONS_11 : FORMATIONS_7;
     const currentLayout = formations[pitchSettings.formation] || [];
     const index = players.length;
@@ -85,7 +112,6 @@ export const TeamProvider = ({ children }) => {
       ? { x: currentLayout[index].x, y: currentLayout[index].y } 
       : { x: 50, y: 50 };
 
-    // Simple ID generator to avoid uuid dependency issues
     const newId = Date.now().toString(36) + Math.random().toString(36).substr(2);
 
     const newPlayer = {
@@ -96,7 +122,6 @@ export const TeamProvider = ({ children }) => {
     };
     
     setPlayers(prev => [...prev, newPlayer]);
-    console.log("Player added, new list length:", players.length + 1);
   };
 
   const updatePlayer = (id, updatedData) => {
@@ -111,7 +136,11 @@ export const TeamProvider = ({ children }) => {
     setPlayers(players.filter(p => p.id !== id));
   };
 
-  const addVote = (playerId, voteStats) => {
+  // This function is now mainly for local optimistic updates, 
+  // but the actual voting happens on the VotingPage via direct API call.
+  // If we want to reflect votes here, we'd need to poll or reload.
+  const addVote = async (playerId, voteStats) => {
+    // Optimistic update
     setPlayers(players.map(p => {
       if (p.id === playerId) {
         const newVotes = [...(p.votes || []), voteStats];
@@ -127,6 +156,13 @@ export const TeamProvider = ({ children }) => {
       }
       return p;
     }));
+    
+    // Real API call is handled in VotingPage usually, but if called from here:
+    try {
+        await axios.post(`${API_URL}/player/${playerId}/vote`, voteStats);
+    } catch (e) {
+        console.error("Error submitting vote", e);
+    }
   };
 
   const importTeam = (jsonData) => {
@@ -155,7 +191,8 @@ export const TeamProvider = ({ children }) => {
       deletePlayer,
       addVote,
       importTeam,
-      applyFormation
+      applyFormation,
+      loading
     }}>
       {children}
     </TeamContext.Provider>

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -6,10 +6,9 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
-from typing import List
+from typing import List, Dict, Optional, Any
 import uuid
 from datetime import datetime, timezone
-
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -25,46 +24,135 @@ app = FastAPI()
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
+# --- Models ---
 
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
-    
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+class Stats(BaseModel):
+    speed: int = 70
+    dribbling: int = 70
+    reception: int = 70
+    passing: int = 70
+    shooting: int = 70
+    stamina: int = 70
+    heading: int = 70
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
+class Position(BaseModel):
+    x: float
+    y: float
 
-# Add your routes to the router instead of directly to app
+class Player(BaseModel):
+    id: str
+    name: str
+    nickname: Optional[str] = ""
+    number: str
+    role: str
+    avatar: Optional[str] = ""
+    stats: Stats
+    position: Position
+    votes: List[Dict[str, int]] = []
+
+class PitchSettings(BaseModel):
+    mode: str = '11'
+    formation: str = '4-3-3'
+    color: str = 'green'
+    texture: str = 'striped'
+    kitColor: str = '#ef4444'
+    kitNumberColor: str = '#ffffff'
+    viewMode: str = '2d'
+
+class ClubInfo(BaseModel):
+    name: str = 'MI EQUIPO FC'
+    logo: str = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg/1200px-FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg.png'
+
+class Team(BaseModel):
+    players: List[Player] = []
+    pitchSettings: PitchSettings
+    clubInfo: ClubInfo
+
+# --- Routes ---
+
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Soccer Builder API"}
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
+@api_router.get("/team", response_model=Team)
+async def get_team():
+    # Try to find the existing team (singleton for this demo)
+    team_doc = await db.teams.find_one({"_id": "default_team"})
     
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
+    if team_doc:
+        return Team(**team_doc)
     
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
+    # Create default if not exists
+    default_team = Team(
+        players=[],
+        pitchSettings=PitchSettings(),
+        clubInfo=ClubInfo()
+    )
+    await db.teams.insert_one({"_id": "default_team", **default_team.model_dump()})
+    return default_team
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
+@api_router.post("/team", response_model=Team)
+async def save_team(team: Team):
+    await db.teams.replace_one(
+        {"_id": "default_team"},
+        {"_id": "default_team", **team.model_dump()},
+        upsert=True
+    )
+    return team
+
+@api_router.get("/player/{player_id}", response_model=Player)
+async def get_player(player_id: str):
+    team_doc = await db.teams.find_one({"_id": "default_team"})
+    if not team_doc:
+        raise HTTPException(status_code=404, detail="Team not found")
     
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
+    players = team_doc.get("players", [])
+    for p in players:
+        if p["id"] == player_id:
+            return Player(**p)
+            
+    raise HTTPException(status_code=404, detail="Player not found")
+
+@api_router.post("/player/{player_id}/vote")
+async def vote_player(player_id: str, vote_stats: Stats):
+    team_doc = await db.teams.find_one({"_id": "default_team"})
+    if not team_doc:
+        raise HTTPException(status_code=404, detail="Team not found")
     
-    return status_checks
+    players = team_doc.get("players", [])
+    player_index = -1
+    
+    for i, p in enumerate(players):
+        if p["id"] == player_id:
+            player_index = i
+            break
+            
+    if player_index == -1:
+        raise HTTPException(status_code=404, detail="Player not found")
+    
+    # Add vote
+    current_player = players[player_index]
+    votes = current_player.get("votes", [])
+    votes.append(vote_stats.model_dump())
+    
+    # Recalculate averages
+    new_stats = current_player["stats"].copy()
+    if votes:
+        for key in new_stats:
+            total = sum(v.get(key, 0) for v in votes)
+            new_stats[key] = round(total / len(votes))
+            
+    # Update in DB
+    current_player["votes"] = votes
+    current_player["stats"] = new_stats
+    players[player_index] = current_player
+    
+    await db.teams.update_one(
+        {"_id": "default_team"},
+        {"$set": {"players": players}}
+    )
+    
+    return {"message": "Vote recorded", "new_stats": new_stats}
 
 # Include the router in the main app
 app.include_router(api_router)
