@@ -72,6 +72,7 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
   };
 
   const handleSubmit = (e) => {
+    console.log("Form submitted", formData);
     e.preventDefault();
     onSubmit(formData);
     onOpenChange(false);

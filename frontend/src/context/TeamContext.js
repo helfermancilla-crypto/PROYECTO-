@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { FORMATIONS_11, FORMATIONS_7 } from '@/lib/formations';
 
 const TeamContext = createContext();
@@ -10,26 +9,41 @@ export const TeamProvider = ({ children }) => {
   const [players, setPlayers] = useState([]);
   const [clubInfo, setClubInfo] = useState({
     name: 'MI EQUIPO FC',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg/1200px-FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg.png' // Default placeholder
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg/1200px-FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg.png'
   });
-  const [pitchSettings, setPitchSettings] = useState({
-    mode: '11', // '11' or '7'
+  
+  // Default settings
+  const defaultSettings = {
+    mode: '11',
     formation: '4-3-3',
     color: 'green', 
     texture: 'striped',
-    kitColor: '#ef4444', // Default red kit
-    kitNumberColor: '#ffffff', // Default white numbers
-  });
+    kitColor: '#ef4444',
+    kitNumberColor: '#ffffff',
+    viewMode: '2d',
+  };
+
+  const [pitchSettings, setPitchSettings] = useState(defaultSettings);
 
   // Load from LocalStorage on mount
   useEffect(() => {
-    const savedPlayers = localStorage.getItem('soccerBuilder_players');
-    const savedPitch = localStorage.getItem('soccerBuilder_pitch');
-    const savedClub = localStorage.getItem('soccerBuilder_club');
-    
-    if (savedPlayers) setPlayers(JSON.parse(savedPlayers));
-    if (savedPitch) setPitchSettings(JSON.parse(savedPitch));
-    if (savedClub) setClubInfo(JSON.parse(savedClub));
+    try {
+      const savedPlayers = localStorage.getItem('soccerBuilder_players');
+      const savedPitch = localStorage.getItem('soccerBuilder_pitch');
+      const savedClub = localStorage.getItem('soccerBuilder_club');
+      
+      if (savedPlayers) setPlayers(JSON.parse(savedPlayers));
+      
+      if (savedPitch) {
+        // Merge saved settings with defaults to ensure new fields (like mode) exist
+        const parsedPitch = JSON.parse(savedPitch);
+        setPitchSettings(prev => ({ ...prev, ...parsedPitch }));
+      }
+      
+      if (savedClub) setClubInfo(JSON.parse(savedClub));
+    } catch (error) {
+      console.error("Error loading from localStorage:", error);
+    }
   }, []);
 
   // Save to LocalStorage whenever state changes
@@ -51,7 +65,6 @@ export const TeamProvider = ({ children }) => {
     
     if (!layout) return;
 
-    // Map existing players to new positions based on index
     const updatedPlayers = players.map((player, index) => {
       if (index < layout.length) {
         return { ...player, position: { x: layout[index].x, y: layout[index].y } };
@@ -64,7 +77,7 @@ export const TeamProvider = ({ children }) => {
   };
 
   const addPlayer = (playerData) => {
-    // Find first available spot in current formation or center
+    console.log("Adding player:", playerData);
     const formations = pitchSettings.mode === '11' ? FORMATIONS_11 : FORMATIONS_7;
     const currentLayout = formations[pitchSettings.formation] || [];
     const index = players.length;
@@ -72,13 +85,18 @@ export const TeamProvider = ({ children }) => {
       ? { x: currentLayout[index].x, y: currentLayout[index].y } 
       : { x: 50, y: 50 };
 
+    // Simple ID generator to avoid uuid dependency issues
+    const newId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+
     const newPlayer = {
-      id: uuidv4(),
+      id: newId,
       ...playerData,
       position: defaultPos,
       votes: [],
     };
-    setPlayers([...players, newPlayer]);
+    
+    setPlayers(prev => [...prev, newPlayer]);
+    console.log("Player added, new list length:", players.length + 1);
   };
 
   const updatePlayer = (id, updatedData) => {
@@ -115,7 +133,7 @@ export const TeamProvider = ({ children }) => {
     try {
       const data = JSON.parse(jsonData);
       if (data.players) setPlayers(data.players);
-      if (data.pitchSettings) setPitchSettings(data.pitchSettings);
+      if (data.pitchSettings) setPitchSettings(prev => ({ ...prev, ...data.pitchSettings }));
       if (data.clubInfo) setClubInfo(data.clubInfo);
       return true;
     } catch (e) {
