@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTeam } from '../context/TeamContext';
 import Pitch from '../components/Pitch';
 import PlayerForm from '../components/PlayerForm';
-import PlayerCard from '../components/PlayerCard';
+import PlayerCard, { CardVisual } from '../components/PlayerCard'; // Import CardVisual
 import { Button } from "@/components/ui/button";
 import { Settings, Download, Upload, Plus, Share2, Palette, Layout, Activity, Shield, Trophy, Move, Maximize } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -142,6 +142,15 @@ const Home = () => {
 
   const teamStats = calculateTeamStats();
 
+  // Dummy player for preview
+  const previewPlayer = {
+    name: 'JUGADOR',
+    role: 'FWD',
+    number: '10',
+    nation: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png',
+    stats: { speed: 90, dribbling: 88, shooting: 85, heading: 70, passing: 82, stamina: 80 }
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-white flex flex-col overflow-hidden">
       {/* Header */}
@@ -231,12 +240,26 @@ const Home = () => {
                     <Settings className="w-5 h-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent className="bg-slate-900 border-slate-800 text-white overflow-y-auto">
+                <SheetContent className="bg-slate-900 border-slate-800 text-white overflow-y-auto sm:max-w-[450px]">
                   <SheetHeader>
                     <SheetTitle className="text-emerald-400">Configuración Visual</SheetTitle>
                   </SheetHeader>
                   <div className="py-6 space-y-8">
                     
+                    {/* LIVE PREVIEW SECTION */}
+                    <div className="flex flex-col items-center space-y-2 bg-slate-950/50 p-4 rounded-lg border border-slate-800">
+                      <Label className="text-xs text-emerald-400 uppercase font-bold tracking-wider mb-2">Vista Previa en Vivo</Label>
+                      <div className="scale-[0.6] origin-top">
+                        <CardVisual 
+                          player={previewPlayer} 
+                          pitchSettings={pitchSettings} 
+                          clubInfo={clubInfo} 
+                        />
+                      </div>
+                      {/* Spacer to compensate for scale */}
+                      <div className="h-[280px]"></div>
+                    </div>
+
                     {/* Card Settings */}
                     <div className="space-y-4 border-b border-slate-800 pb-4">
                       <div className="flex items-center gap-2 text-slate-300 font-bold uppercase text-xs tracking-wider">
