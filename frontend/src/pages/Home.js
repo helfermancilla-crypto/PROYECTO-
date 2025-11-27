@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTeam } from '../context/TeamContext';
 import Pitch from '../components/Pitch';
 import PlayerForm from '../components/PlayerForm';
-import PlayerCard, { CardVisual } from '../components/PlayerCard'; // Import CardVisual
+import PlayerCard, { CardVisual } from '../components/PlayerCard';
 import { Button } from "@/components/ui/button";
 import { Settings, Download, Upload, Plus, Share2, Palette, Layout, Activity, Shield, Trophy, Move, Maximize } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -148,7 +148,7 @@ const Home = () => {
     role: 'FWD',
     number: '10',
     nation: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png',
-    stats: { speed: 90, dribbling: 88, shooting: 85, heading: 70, passing: 82, stamina: 80 }
+    stats: { pac: 90, dri: 88, sho: 85, def: 70, pas: 82, phy: 80 }
   };
 
   return (
@@ -256,8 +256,7 @@ const Home = () => {
                           clubInfo={clubInfo} 
                         />
                       </div>
-                      {/* Spacer to compensate for scale */}
-                      <div className="h-[280px]"></div>
+                      {/* Spacer removed to reduce gap */}
                     </div>
 
                     {/* Card Settings */}

@@ -22,7 +22,16 @@ const VotingPage = () => {
       try {
         const response = await axios.get(`${API_URL}/player/${playerId}`);
         setPlayer(response.data);
-        setVotes(response.data.stats);
+        // Ensure we have the correct stats structure
+        const stats = response.data.stats || {};
+        setVotes({
+          pac: stats.pac || stats.speed || 70,
+          sho: stats.sho || stats.shooting || 70,
+          pas: stats.pas || stats.passing || 70,
+          dri: stats.dri || stats.dribbling || 70,
+          def: stats.def || stats.heading || 70,
+          phy: stats.phy || stats.stamina || 70
+        });
       } catch (error) {
         console.error("Error fetching player:", error);
         toast.error("No se pudo cargar el jugador. Verifica el enlace.");
@@ -52,13 +61,12 @@ const VotingPage = () => {
   };
 
   const statLabels = {
-    speed: 'Velocidad',
-    dribbling: 'Regate',
-    reception: 'Control',
-    passing: 'Pase',
-    shooting: 'Tiro',
-    stamina: 'Físico',
-    heading: 'Cabezazo'
+    pac: 'Ritmo (PAC)',
+    sho: 'Tiro (TIR)',
+    pas: 'Pase (PAS)',
+    dri: 'Regate (REG)',
+    def: 'Defensa (DEF)',
+    phy: 'Físico (FIS)'
   };
 
   if (loading) {

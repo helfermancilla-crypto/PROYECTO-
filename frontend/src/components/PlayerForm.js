@@ -13,22 +13,33 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
     nickname: '',
     number: '10',
     role: 'MID',
-    nation: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png', // Default flag
+    nation: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png',
     avatar: '',
     stats: {
-      speed: 70,
-      dribbling: 70,
-      reception: 70,
-      passing: 70,
-      shooting: 70,
-      stamina: 70,
-      heading: 70
+      pac: 70,
+      sho: 70,
+      pas: 70,
+      dri: 70,
+      def: 70,
+      phy: 70
     }
   });
 
   React.useEffect(() => {
     if (initialData) {
-      setFormData(initialData);
+      // Ensure stats object has the new keys if loading old data
+      const stats = initialData.stats || {};
+      setFormData({
+        ...initialData,
+        stats: {
+          pac: stats.pac || stats.speed || 70,
+          sho: stats.sho || stats.shooting || 70,
+          pas: stats.pas || stats.passing || 70,
+          dri: stats.dri || stats.dribbling || 70,
+          def: stats.def || stats.heading || 70,
+          phy: stats.phy || stats.stamina || 70
+        }
+      });
     } else {
       setFormData({
         name: '',
@@ -38,13 +49,12 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
         nation: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png',
         avatar: '',
         stats: {
-          speed: 70,
-          dribbling: 70,
-          reception: 70,
-          passing: 70,
-          shooting: 70,
-          stamina: 70,
-          heading: 70
+          pac: 70,
+          sho: 70,
+          pas: 70,
+          dri: 70,
+          def: 70,
+          phy: 70
         }
       });
     }
@@ -79,13 +89,12 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
   };
 
   const statLabels = {
-    speed: 'Velocidad',
-    dribbling: 'Regate',
-    reception: 'Control',
-    passing: 'Pase',
-    shooting: 'Tiro',
-    stamina: 'Físico',
-    heading: 'Cabezazo'
+    pac: 'Ritmo (PAC)',
+    sho: 'Tiro (TIR)',
+    pas: 'Pase (PAS)',
+    dri: 'Regate (REG)',
+    def: 'Defensa (DEF)',
+    phy: 'Físico (FIS)'
   };
 
   return (

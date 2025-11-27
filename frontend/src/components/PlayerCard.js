@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Download, Share2, Edit, X } from 'lucide-react';
+import { Download, Share2, Edit, X, Users } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { cn } from '@/lib/utils';
 import { useTeam } from '../context/TeamContext';
@@ -11,6 +11,7 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
   // Calculate Overall Rating
   const statsArr = Object.values(player.stats);
   const overall = Math.round(statsArr.reduce((a, b) => a + b, 0) / statsArr.length);
+  const voteCount = player.votes ? player.votes.length : 0;
   
   // Colors & Gradient Logic
   const color1 = pitchSettings.cardColor || '#1e293b';
@@ -29,13 +30,14 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
   const TEXTURE_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/xmbei8xh_textura%20de%20tela.png";
   const BORDER_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/g95tghim_borde%20dorado.png";
 
+  // Spanish Stats Mapping
   const displayStats = [
-    { label: 'PAC', val: player.stats.speed },
-    { label: 'DRI', val: player.stats.dribbling },
-    { label: 'SHO', val: player.stats.shooting },
-    { label: 'DEF', val: player.stats.heading }, 
-    { label: 'PAS', val: player.stats.passing },
-    { label: 'PHY', val: player.stats.stamina },
+    { label: 'RIT', val: player.stats.pac },
+    { label: 'REG', val: player.stats.dri },
+    { label: 'TIR', val: player.stats.sho },
+    { label: 'DEF', val: player.stats.def }, 
+    { label: 'PAS', val: player.stats.pas },
+    { label: 'FIS', val: player.stats.phy },
   ];
 
   return (
@@ -44,8 +46,8 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
       className="relative w-[380px] h-[500px] overflow-hidden font-fifa shadow-2xl origin-top-left"
       style={{
         clipPath: "path('M 50 15 L 330 15 C 330 15 330 40 365 55 L 365 350 C 365 450 190 485 190 485 C 190 485 15 450 15 350 L 15 55 C 50 40 50 15 50 15 Z')",
-        transform: `scale(${scale})`, // For preview scaling
-        marginBottom: scale < 1 ? `-${500 * (1 - scale)}px` : 0, // Fix layout spacing when scaled down
+        transform: `scale(${scale})`, 
+        marginBottom: scale < 1 ? `-${500 * (1 - scale)}px` : 0, 
         marginRight: scale < 1 ? `-${380 * (1 - scale)}px` : 0
       }}
     >
@@ -131,6 +133,16 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
               </div>
             ))}
           </div>
+          
+          {/* Vote Count Indicator */}
+          {voteCount > 0 && (
+            <div className="absolute -bottom-4 left-0 right-0 flex justify-center">
+              <div className="flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm border border-[#fde047]/20">
+                <Users className="w-3 h-3 text-[#fde047]" />
+                <span className="text-[10px] font-bold text-white">{voteCount} Votos</span>
+              </div>
+            </div>
+          )}
         </div>
 
       </div>
