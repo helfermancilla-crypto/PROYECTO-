@@ -584,6 +584,21 @@ test_plan:
           agent: "testing"
           comment: "✅ PLAYER FORM STATS INPUT SYNCHRONIZATION FULLY VERIFIED: Comprehensive testing completed with ALL 10 requested scenarios passing perfectly! 1) App opens correctly ✅ 2) 'Añadir Jugador' button clicked successfully ✅ 3) 'Estadísticas (7)' tab clicked and content switches correctly ✅ 4) All 7/7 input fields found next to stat labels (Velocidad, Regate, Recepción, Pase, Disparo, Resistencia, Cabezazo) ✅ 5) Successfully typed '88' into Velocidad input ✅ 6) Velocidad slider moved correctly to match input value (88) ✅ 7) Regate slider moved to ~88-90 range when dragged ✅ 8) Regate input field updated correctly to match slider movement ✅ 9) Required fields filled (Name: StatsTestPlayer, Number: 88) and 'Guardar Jugador' clicked successfully ✅ 10) Player created successfully with form dialog closing, toast confirmation, and player visible on pitch ✅. The Input-Slider synchronization is working PERFECTLY in both directions: typing in input updates slider, and moving slider updates input. All 7 stat controls (Velocidad, Regate, Recepción, Pase, Disparo, Resistencia, Cabezazo) have proper input fields positioned next to their labels with full bidirectional synchronization. Player creation with custom stats is fully functional."
 
+  - task: "Stats Input Fix"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/components/PlayerForm.js"
+    stuck_count: 1
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "New Stats Input Fix test requested - needs comprehensive verification of all 12 specific steps: app opening, clicking 'Añadir Jugador', clicking 'Estadísticas' tab, clicking PAC input, typing '88', verifying value updates, verifying slider moves, deleting value, verifying it becomes 0/empty without crash, typing '99', saving player with filled fields, and verifying player creation with correct stats."
+        - working: false
+          agent: "testing"
+          comment: "❌ CRITICAL STATS INPUT SYNCHRONIZATION ISSUE IDENTIFIED: Comprehensive testing revealed a critical bug in the stats input functionality. ISSUE DETAILS: 1) Input field VISUALLY shows typed values (88, 99) correctly ✅ 2) Slider synchronization FROM input TO slider works perfectly ✅ 3) Slider synchronization FROM slider TO input works correctly ✅ 4) BUT input.value attribute does NOT update when typing - remains at default '70' ❌ 5) Input field appears focused and accepts keystrokes ✅ 6) No console errors or crashes detected ✅ 7) Player creation works but may save incorrect stats ❌. ROOT CAUSE: The input field's visual display updates but the underlying value attribute is not synchronized with the display. This means while users see their typed values (88, 99), the form actually submits the default value (70). The handleStatChange function may not be properly updating the input's value attribute, or there's a React state synchronization issue between the visual display and the actual form value. This is a critical UX bug that makes users think they're setting custom stats when they're actually getting default values."
+
 agent_communication:
     - agent: "testing"
       message: "Updated test_result.md for Soccer Builder App. Ready to test all core functionality including pitch display, player creation, player cards, vote links, and settings."
