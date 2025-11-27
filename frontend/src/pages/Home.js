@@ -142,12 +142,13 @@ const Home = () => {
 
   const teamStats = calculateTeamStats();
 
-  // Dummy player for preview
+  // Dummy player for preview - NOW WITH AVATAR
   const previewPlayer = {
     name: 'JUGADOR',
     role: 'FWD',
     number: '10',
     nation: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png',
+    avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=300&auto=format&fit=crop', // Added default avatar
     stats: { speed: 90, dribbling: 88, shooting: 85, heading: 70, passing: 82, stamina: 80, reception: 85 }
   };
 
@@ -246,16 +247,16 @@ const Home = () => {
                   </SheetHeader>
                   <div className="py-6 space-y-8">
                     
-                    {/* LIVE PREVIEW SECTION */}
+                    {/* LIVE PREVIEW SECTION - FIXED SPACING & AVATAR */}
                     <div className="flex flex-col items-center space-y-2 bg-slate-950/50 p-4 rounded-lg border border-slate-800">
                       <Label className="text-xs text-emerald-400 uppercase font-bold tracking-wider mb-2">Vista Previa en Vivo</Label>
-                      <div className="scale-[0.6] origin-top">
-                        <CardVisual 
-                          player={previewPlayer} 
-                          pitchSettings={pitchSettings} 
-                          clubInfo={clubInfo} 
-                        />
-                      </div>
+                      {/* Use scale prop instead of CSS transform to fix spacing */}
+                      <CardVisual 
+                        player={previewPlayer} 
+                        pitchSettings={pitchSettings} 
+                        clubInfo={clubInfo} 
+                        scale={0.6}
+                      />
                     </div>
 
                     {/* Card Settings */}
