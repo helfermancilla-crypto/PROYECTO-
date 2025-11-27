@@ -16,30 +16,27 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
     nation: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png',
     avatar: '',
     stats: {
-      speed: 70,
-      dribbling: 70,
-      reception: 70,
-      passing: 70,
-      shooting: 70,
-      stamina: 70,
-      heading: 70
+      pac: 70,
+      sho: 70,
+      pas: 70,
+      dri: 70,
+      def: 70,
+      phy: 70
     }
   });
 
   React.useEffect(() => {
     if (initialData) {
-      // Handle migration from old 6-stat format if necessary
-      const s = initialData.stats || {};
+      const stats = initialData.stats || {};
       setFormData({
         ...initialData,
         stats: {
-          speed: s.speed || s.pac || 70,
-          dribbling: s.dribbling || s.dri || 70,
-          reception: s.reception || 70,
-          passing: s.passing || s.pas || 70,
-          shooting: s.shooting || s.sho || 70,
-          stamina: s.stamina || s.phy || 70,
-          heading: s.heading || s.def || 70
+          pac: stats.pac || stats.speed || 70,
+          sho: stats.sho || stats.shooting || 70,
+          pas: stats.pas || stats.passing || 70,
+          dri: stats.dri || stats.dribbling || 70,
+          def: stats.def || stats.heading || 70,
+          phy: stats.phy || stats.stamina || 70
         }
       });
     } else {
@@ -51,13 +48,12 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
         nation: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png',
         avatar: '',
         stats: {
-          speed: 70,
-          dribbling: 70,
-          reception: 70,
-          passing: 70,
-          shooting: 70,
-          stamina: 70,
-          heading: 70
+          pac: 70,
+          sho: 70,
+          pas: 70,
+          dri: 70,
+          def: 70,
+          phy: 70
         }
       });
     }
@@ -68,9 +64,15 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
   };
 
   const handleStatChange = (stat, value) => {
+    // Ensure value is a valid number between 0 and 99
+    let safeValue = parseInt(value);
+    if (isNaN(safeValue)) safeValue = 0;
+    if (safeValue > 99) safeValue = 99;
+    if (safeValue < 0) safeValue = 0;
+
     setFormData(prev => ({
       ...prev,
-      stats: { ...prev.stats, [stat]: value }
+      stats: { ...prev.stats, [stat]: safeValue }
     }));
   };
 
@@ -92,13 +94,12 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
   };
 
   const statLabels = {
-    speed: 'Velocidad',
-    dribbling: 'Regate',
-    reception: 'Recepción',
-    passing: 'Pase',
-    shooting: 'Disparo',
-    stamina: 'Resistencia',
-    heading: 'Cabezazo'
+    pac: 'Ritmo (PAC)',
+    sho: 'Tiro (TIR)',
+    pas: 'Pase (PAS)',
+    dri: 'Regate (REG)',
+    def: 'Defensa (DEF)',
+    phy: 'Físico (FIS)'
   };
 
   return (
@@ -114,7 +115,7 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
           <Tabs defaultValue="details" className="w-full">
             <TabsList className="grid w-full grid-cols-2 bg-slate-800">
               <TabsTrigger value="details">Detalles</TabsTrigger>
-              <TabsTrigger value="stats">Estadísticas (7)</TabsTrigger>
+              <TabsTrigger value="stats">Estadísticas</TabsTrigger>
             </TabsList>
             
             <TabsContent value="details" className="space-y-4 mt-4">
@@ -195,34 +196,39 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
               </div>
             </TabsContent>
 
-            <TabsContent value="stats" className="space-y-5 mt-4">
+            <TabsContent value="stats" className="space-y-6 mt-4 px-1">
               {Object.entries(formData.stats).map(([key, val]) => (
-                <div key={key} className="space-y-1">
-                  <div className="flex justify-between items-center text-xs uppercase font-bold text-slate-400">
-                    <span>{statLabels[key] || key}</span>
-                    <Input 
-                      type="number" 
-                      value={val} 
-                      onChange={(e) => handleStatChange(key, parseInt(e.target.value) || 0)}
-                      className="w-16 h-6 text-right bg-slate-800 border-slate-700 text-emerald-400 p-1"
-                      min={0}
-                      max={99}
+                <div key={key} className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <Label className="text-xs uppercase font-bold text-slate-400 w-24">
+                      {statLabels[key] || key}
+                    </Label>
+                    
+                    {/* RAW INPUT REPLACEMENT FOR STABILITY */}
+                    <input
+                      type="number"
+                      value={val}
+                      onChange={(e) => handleStatChange(key, e.target.value)}
+                      className="w-20 h-8 text-right bg-slate-950 border border-slate-700 rounded-md text-emerald-400 px-2 font-mono font-bold focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
+                      min="0"
+                      max="99"
                     />
                   </div>
+                  
                   <Slider 
                     value={[val]} 
                     max={99} 
-                    min={1} 
+                    min={0} 
                     step={1} 
                     onValueChange={v => handleStatChange(key, v[0])}
-                    className="[&>.relative>.absolute]:bg-emerald-500"
+                    className="[&>.relative>.absolute]:bg-emerald-500 py-2 cursor-pointer"
                   />
                 </div>
               ))}
             </TabsContent>
           </Tabs>
 
-          <DialogFooter className="flex justify-between sm:justify-between gap-2">
+          <DialogFooter className="flex justify-between sm:justify-between gap-2 pt-4 border-t border-slate-800">
             {initialData && (
               <Button 
                 type="button" 
@@ -239,7 +245,7 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="border-slate-600 text-slate-300 hover:bg-slate-800">
                 Cancelar
               </Button>
-              <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white">
+              <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
                 Guardar Jugador
               </Button>
             </div>
