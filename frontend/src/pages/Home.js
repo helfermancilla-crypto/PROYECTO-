@@ -5,7 +5,7 @@ import Pitch from '../components/Pitch';
 import PlayerForm from '../components/PlayerForm';
 import PlayerCard, { CardVisual } from '../components/PlayerCard';
 import { Button } from "@/components/ui/button";
-import { Settings, Download, Upload, Plus, Share2, Palette, Layout, Activity, Shield, Trophy, Move, Maximize } from 'lucide-react';
+import { Settings, Download, Upload, Plus, Share2, Palette, Layout, Activity, Shield, Trophy, Move, Maximize, Crop, Image as ImageIcon } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -256,7 +256,6 @@ const Home = () => {
                           clubInfo={clubInfo} 
                         />
                       </div>
-                      {/* Spacer removed to reduce gap */}
                     </div>
 
                     {/* Card Settings */}
@@ -338,6 +337,66 @@ const Home = () => {
                             min={-50} max={50} step={1}
                             onValueChange={(v) => setPitchSettings(prev => ({...prev, cardContentY: v[0]}))}
                             className="[&>.relative>.absolute]:bg-emerald-500"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Player Image Controls */}
+                      <div className="space-y-3 pt-2 border-t border-slate-800 mt-2">
+                        <Label className="text-xs text-emerald-400 uppercase font-bold flex items-center gap-2">
+                          <ImageIcon className="w-3 h-3" /> Ajuste de Foto Jugador
+                        </Label>
+                        
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-xs">
+                            <span>Zoom Foto</span>
+                            <span>{pitchSettings.playerImageScale || 100}%</span>
+                          </div>
+                          <Slider 
+                            value={[pitchSettings.playerImageScale || 100]} 
+                            min={50} max={150} step={1}
+                            onValueChange={(v) => setPitchSettings(prev => ({...prev, playerImageScale: v[0]}))}
+                            className="[&>.relative>.absolute]:bg-blue-500"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-xs">
+                              <span>Posición X</span>
+                              <span>{pitchSettings.playerImageX || 0}</span>
+                            </div>
+                            <Slider 
+                              value={[pitchSettings.playerImageX || 0]} 
+                              min={-100} max={100} step={1}
+                              onValueChange={(v) => setPitchSettings(prev => ({...prev, playerImageX: v[0]}))}
+                              className="[&>.relative>.absolute]:bg-blue-500"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-xs">
+                              <span>Posición Y</span>
+                              <span>{pitchSettings.playerImageY || 0}</span>
+                            </div>
+                            <Slider 
+                              value={[pitchSettings.playerImageY || 0]} 
+                              min={-100} max={100} step={1}
+                              onValueChange={(v) => setPitchSettings(prev => ({...prev, playerImageY: v[0]}))}
+                              className="[&>.relative>.absolute]:bg-blue-500"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-xs">
+                            <span>Recorte Inferior (Crop)</span>
+                            <span>{pitchSettings.playerImageCropBottom || 0}%</span>
+                          </div>
+                          <Slider 
+                            value={[pitchSettings.playerImageCropBottom || 0]} 
+                            min={0} max={50} step={1}
+                            onValueChange={(v) => setPitchSettings(prev => ({...prev, playerImageCropBottom: v[0]}))}
+                            className="[&>.relative>.absolute]:bg-red-500"
                           />
                         </div>
                       </div>

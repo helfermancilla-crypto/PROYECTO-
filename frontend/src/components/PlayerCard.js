@@ -23,22 +23,28 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
   if (gradientType === 'horizontal') backgroundStyle = { background: `linear-gradient(to right, ${color1}, ${color2})` };
   if (gradientType === 'diagonal') backgroundStyle = { background: `linear-gradient(135deg, ${color1}, ${color2})` };
 
-  // Manual Fit Adjustments
+  // Manual Fit Adjustments (Global Content)
   const contentScale = (pitchSettings.cardContentScale || 100) / 100;
   const translateY = pitchSettings.cardContentY || 0;
+
+  // Player Image Specific Adjustments
+  const imgScale = (pitchSettings.playerImageScale || 100) / 100;
+  const imgX = pitchSettings.playerImageX || 0;
+  const imgY = pitchSettings.playerImageY || 0;
+  const imgCropBottom = pitchSettings.playerImageCropBottom || 0;
   
   const TEXTURE_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/xmbei8xh_textura%20de%20tela.png";
   const BORDER_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/g95tghim_borde%20dorado.png";
 
-  // 7 Stats Mapping (Restored)
+  // 7 Stats Mapping
   const displayStats = [
-    { label: 'VEL', val: player.stats.speed || player.stats.pac || 0 },
+    { label: 'RIT', val: player.stats.speed || player.stats.pac || 0 },
     { label: 'REG', val: player.stats.dribbling || player.stats.dri || 0 },
-    { label: 'REC', val: player.stats.reception || 0 }, // New
+    { label: 'REC', val: player.stats.reception || 0 },
     { label: 'PAS', val: player.stats.passing || player.stats.pas || 0 },
     { label: 'TIR', val: player.stats.shooting || player.stats.sho || 0 },
-    { label: 'RES', val: player.stats.stamina || player.stats.phy || 0 },
-    { label: 'CAB', val: player.stats.heading || player.stats.def || 0 },
+    { label: 'FIS', val: player.stats.stamina || player.stats.phy || 0 },
+    { label: 'DEF', val: player.stats.heading || player.stats.def || 0 },
   ];
 
   return (
@@ -101,13 +107,17 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
             </div>
           </div>
 
-          {/* Player Image */}
+          {/* Player Image - With Specific Adjustments */}
           <div className="absolute top-4 right-[-20px] w-[200px] h-[240px] z-20 flex items-end justify-center">
             {player.avatar ? (
               <img 
                 src={player.avatar} 
                 alt={player.name} 
-                className="w-full h-full object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)]" 
+                className="w-full h-full object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)] transition-all duration-200"
+                style={{
+                  transform: `scale(${imgScale}) translate(${imgX}px, ${imgY}px)`,
+                  clipPath: `inset(0 0 ${imgCropBottom}% 0)` // Crop from bottom
+                }}
               />
             ) : (
               <div className="text-white/20 text-8xl font-fifa">?</div>

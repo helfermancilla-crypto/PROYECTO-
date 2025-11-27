@@ -25,13 +25,18 @@ export const TeamProvider = ({ children }) => {
     
     // Card Visual Settings
     cardColor: '#1e293b',
-    cardColor2: '#0f172a', // Secondary color for gradient
-    cardGradient: 'diagonal', // none, vertical, horizontal, diagonal
+    cardColor2: '#0f172a',
+    cardGradient: 'diagonal',
     
-    // Card Fit Adjustments (Manual Calibration)
-    cardContentScale: 100, // %
-    cardContentY: 0, // px
-    cardContentX: 0, // px
+    // Card Fit Adjustments (Global Content)
+    cardContentScale: 100,
+    cardContentY: 0,
+    
+    // Player Image Specific Adjustments
+    playerImageScale: 100, // %
+    playerImageX: 0, // px
+    playerImageY: 0, // px
+    playerImageCropBottom: 0, // %
     
     viewMode: '2d',
   };
