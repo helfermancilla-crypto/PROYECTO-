@@ -35,7 +35,7 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
         stats: {
           speed: s.speed || s.pac || 70,
           dribbling: s.dribbling || s.dri || 70,
-          reception: s.reception || 70, // New/Restored stat
+          reception: s.reception || 70,
           passing: s.passing || s.pas || 70,
           shooting: s.shooting || s.sho || 70,
           stamina: s.stamina || s.phy || 70,
@@ -70,7 +70,7 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
   const handleStatChange = (stat, value) => {
     setFormData(prev => ({
       ...prev,
-      stats: { ...prev.stats, [stat]: value[0] }
+      stats: { ...prev.stats, [stat]: value }
     }));
   };
 
@@ -198,16 +198,23 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
             <TabsContent value="stats" className="space-y-5 mt-4">
               {Object.entries(formData.stats).map(([key, val]) => (
                 <div key={key} className="space-y-1">
-                  <div className="flex justify-between text-xs uppercase font-bold text-slate-400">
+                  <div className="flex justify-between items-center text-xs uppercase font-bold text-slate-400">
                     <span>{statLabels[key] || key}</span>
-                    <span className="text-emerald-400">{val}</span>
+                    <Input 
+                      type="number" 
+                      value={val} 
+                      onChange={(e) => handleStatChange(key, parseInt(e.target.value) || 0)}
+                      className="w-16 h-6 text-right bg-slate-800 border-slate-700 text-emerald-400 p-1"
+                      min={0}
+                      max={99}
+                    />
                   </div>
                   <Slider 
                     value={[val]} 
                     max={99} 
                     min={1} 
                     step={1} 
-                    onValueChange={v => handleStatChange(key, v)}
+                    onValueChange={v => handleStatChange(key, v[0])}
                     className="[&>.relative>.absolute]:bg-emerald-500"
                   />
                 </div>
