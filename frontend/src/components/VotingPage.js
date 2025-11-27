@@ -25,12 +25,13 @@ const VotingPage = () => {
         // Ensure we have the correct stats structure
         const stats = response.data.stats || {};
         setVotes({
-          pac: stats.pac || stats.speed || 70,
-          sho: stats.sho || stats.shooting || 70,
-          pas: stats.pas || stats.passing || 70,
-          dri: stats.dri || stats.dribbling || 70,
-          def: stats.def || stats.heading || 70,
-          phy: stats.phy || stats.stamina || 70
+          speed: stats.speed || stats.pac || 70,
+          dribbling: stats.dribbling || stats.dri || 70,
+          reception: stats.reception || 70,
+          passing: stats.passing || stats.pas || 70,
+          shooting: stats.shooting || stats.sho || 70,
+          stamina: stats.stamina || stats.phy || 70,
+          heading: stats.heading || stats.def || 70
         });
       } catch (error) {
         console.error("Error fetching player:", error);
@@ -61,12 +62,13 @@ const VotingPage = () => {
   };
 
   const statLabels = {
-    pac: 'Ritmo (PAC)',
-    sho: 'Tiro (TIR)',
-    pas: 'Pase (PAS)',
-    dri: 'Regate (REG)',
-    def: 'Defensa (DEF)',
-    phy: 'Físico (FIS)'
+    speed: 'Velocidad',
+    dribbling: 'Regate',
+    reception: 'Recepción',
+    passing: 'Pase',
+    shooting: 'Disparo',
+    stamina: 'Resistencia',
+    heading: 'Cabezazo'
   };
 
   if (loading) {

@@ -16,28 +16,30 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
     nation: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png',
     avatar: '',
     stats: {
-      pac: 70,
-      sho: 70,
-      pas: 70,
-      dri: 70,
-      def: 70,
-      phy: 70
+      speed: 70,
+      dribbling: 70,
+      reception: 70,
+      passing: 70,
+      shooting: 70,
+      stamina: 70,
+      heading: 70
     }
   });
 
   React.useEffect(() => {
     if (initialData) {
-      // Ensure stats object has the new keys if loading old data
-      const stats = initialData.stats || {};
+      // Handle migration from old 6-stat format if necessary
+      const s = initialData.stats || {};
       setFormData({
         ...initialData,
         stats: {
-          pac: stats.pac || stats.speed || 70,
-          sho: stats.sho || stats.shooting || 70,
-          pas: stats.pas || stats.passing || 70,
-          dri: stats.dri || stats.dribbling || 70,
-          def: stats.def || stats.heading || 70,
-          phy: stats.phy || stats.stamina || 70
+          speed: s.speed || s.pac || 70,
+          dribbling: s.dribbling || s.dri || 70,
+          reception: s.reception || 70, // New/Restored stat
+          passing: s.passing || s.pas || 70,
+          shooting: s.shooting || s.sho || 70,
+          stamina: s.stamina || s.phy || 70,
+          heading: s.heading || s.def || 70
         }
       });
     } else {
@@ -49,12 +51,13 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
         nation: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png',
         avatar: '',
         stats: {
-          pac: 70,
-          sho: 70,
-          pas: 70,
-          dri: 70,
-          def: 70,
-          phy: 70
+          speed: 70,
+          dribbling: 70,
+          reception: 70,
+          passing: 70,
+          shooting: 70,
+          stamina: 70,
+          heading: 70
         }
       });
     }
@@ -89,12 +92,13 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
   };
 
   const statLabels = {
-    pac: 'Ritmo (PAC)',
-    sho: 'Tiro (TIR)',
-    pas: 'Pase (PAS)',
-    dri: 'Regate (REG)',
-    def: 'Defensa (DEF)',
-    phy: 'Físico (FIS)'
+    speed: 'Velocidad',
+    dribbling: 'Regate',
+    reception: 'Recepción',
+    passing: 'Pase',
+    shooting: 'Disparo',
+    stamina: 'Resistencia',
+    heading: 'Cabezazo'
   };
 
   return (
@@ -110,7 +114,7 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
           <Tabs defaultValue="details" className="w-full">
             <TabsList className="grid w-full grid-cols-2 bg-slate-800">
               <TabsTrigger value="details">Detalles</TabsTrigger>
-              <TabsTrigger value="stats">Estadísticas</TabsTrigger>
+              <TabsTrigger value="stats">Estadísticas (7)</TabsTrigger>
             </TabsList>
             
             <TabsContent value="details" className="space-y-4 mt-4">

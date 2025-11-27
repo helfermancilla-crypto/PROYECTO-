@@ -30,14 +30,15 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
   const TEXTURE_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/xmbei8xh_textura%20de%20tela.png";
   const BORDER_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/g95tghim_borde%20dorado.png";
 
-  // Spanish Stats Mapping
+  // 7 Stats Mapping (Restored)
   const displayStats = [
-    { label: 'RIT', val: player.stats.pac },
-    { label: 'REG', val: player.stats.dri },
-    { label: 'TIR', val: player.stats.sho },
-    { label: 'DEF', val: player.stats.def }, 
-    { label: 'PAS', val: player.stats.pas },
-    { label: 'FIS', val: player.stats.phy },
+    { label: 'VEL', val: player.stats.speed || player.stats.pac || 0 },
+    { label: 'REG', val: player.stats.dribbling || player.stats.dri || 0 },
+    { label: 'REC', val: player.stats.reception || 0 }, // New
+    { label: 'PAS', val: player.stats.passing || player.stats.pas || 0 },
+    { label: 'TIR', val: player.stats.shooting || player.stats.sho || 0 },
+    { label: 'RES', val: player.stats.stamina || player.stats.phy || 0 },
+    { label: 'CAB', val: player.stats.heading || player.stats.def || 0 },
   ];
 
   return (
@@ -124,10 +125,13 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
             <div className="h-[1px] w-3/4 mx-auto bg-gradient-to-r from-transparent via-[#fde047] to-transparent opacity-60"></div>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 gap-x-4 gap-y-0 px-2">
+          {/* Stats - 7 Items Grid */}
+          <div className="grid grid-cols-2 gap-x-2 gap-y-0 px-2">
             {displayStats.map((stat, i) => (
-              <div key={i} className="flex items-center justify-center gap-2">
+              <div key={i} className={cn(
+                "flex items-center justify-center gap-2",
+                i === 6 ? "col-span-2" : "" // Center the 7th item
+              )}>
                 <span className="text-lg font-bold text-white drop-shadow-md w-6 text-right">{stat.val}</span>
                 <span className="text-xs font-bold text-[#fde047] uppercase tracking-wider drop-shadow-md w-6 text-left">{stat.label}</span>
               </div>

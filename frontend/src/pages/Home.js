@@ -148,7 +148,7 @@ const Home = () => {
     role: 'FWD',
     number: '10',
     nation: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png',
-    stats: { pac: 90, dri: 88, sho: 85, def: 70, pas: 82, phy: 80 }
+    stats: { speed: 90, dribbling: 88, shooting: 85, heading: 70, passing: 82, stamina: 80, reception: 85 }
   };
 
   return (
