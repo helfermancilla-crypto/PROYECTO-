@@ -5,11 +5,12 @@ import Pitch from '../components/Pitch';
 import PlayerForm from '../components/PlayerForm';
 import PlayerCard from '../components/PlayerCard';
 import { Button } from "@/components/ui/button";
-import { Settings, Download, Upload, Plus, Share2, Palette, Layout, Activity, Shield, Trophy } from 'lucide-react';
+import { Settings, Download, Upload, Plus, Share2, Palette, Layout, Activity, Shield, Trophy, Move, Maximize } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import html2canvas from 'html2canvas';
@@ -135,7 +136,7 @@ const Home = () => {
       overall: getAvg('ALL'),
       att: getAvg('FWD'),
       mid: getAvg('MID'),
-      def: getAvg('DEF') // Includes GK for simplicity or separate if needed
+      def: getAvg('DEF')
     };
   };
 
@@ -182,7 +183,6 @@ const Home = () => {
         
         {/* Left: Pitch Area */}
         <div className="flex-1 relative bg-slate-950 flex items-center justify-center overflow-hidden">
-          {/* Background Ambience */}
           <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1522770179533-24471fcdba45?q=80&w=2560&auto=format&fit=crop')] bg-cover bg-center opacity-10 blur-sm"></div>
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950"></div>
           
@@ -217,9 +217,6 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Mode Selector REMOVED */}
-            {/* Formation Selector REMOVED */}
-
             <div className="flex gap-2">
               <Button 
                 onClick={() => { setEditingPlayer(null); setIsFormOpen(true); }} 
@@ -241,19 +238,84 @@ const Home = () => {
                   <div className="py-6 space-y-8">
                     
                     {/* Card Settings */}
-                    <div className="space-y-4">
+                    <div className="space-y-4 border-b border-slate-800 pb-4">
                       <div className="flex items-center gap-2 text-slate-300 font-bold uppercase text-xs tracking-wider">
                         <Shield className="w-4 h-4" /> Personalización de Tarjeta
                       </div>
+                      
+                      {/* Colors */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Color Principal</Label>
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded border border-slate-600 shadow-sm" style={{backgroundColor: pitchSettings.cardColor}}></div>
+                            <Input 
+                              type="color" 
+                              value={pitchSettings.cardColor}
+                              onChange={(e) => setPitchSettings(prev => ({...prev, cardColor: e.target.value}))}
+                              className="w-full h-8 p-1 bg-slate-800 border-slate-700"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Color Secundario</Label>
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded border border-slate-600 shadow-sm" style={{backgroundColor: pitchSettings.cardColor2}}></div>
+                            <Input 
+                              type="color" 
+                              value={pitchSettings.cardColor2}
+                              onChange={(e) => setPitchSettings(prev => ({...prev, cardColor2: e.target.value}))}
+                              className="w-full h-8 p-1 bg-slate-800 border-slate-700"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
                       <div className="space-y-2">
-                        <Label>Color de Fondo Tarjeta</Label>
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded border border-slate-600 shadow-sm" style={{backgroundColor: pitchSettings.cardColor}}></div>
-                          <Input 
-                            type="color" 
-                            value={pitchSettings.cardColor}
-                            onChange={(e) => setPitchSettings(prev => ({...prev, cardColor: e.target.value}))}
-                            className="w-full h-8 p-1 bg-slate-800 border-slate-700"
+                        <Label>Tipo de Gradiente</Label>
+                        <Select 
+                          value={pitchSettings.cardGradient} 
+                          onValueChange={(v) => setPitchSettings(prev => ({...prev, cardGradient: v}))}
+                        >
+                          <SelectTrigger className="bg-slate-800 border-slate-700">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                            <SelectItem value="none">Sólido</SelectItem>
+                            <SelectItem value="vertical">Vertical</SelectItem>
+                            <SelectItem value="horizontal">Horizontal</SelectItem>
+                            <SelectItem value="diagonal">Diagonal</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Manual Fit Controls */}
+                      <div className="space-y-3 pt-2">
+                        <Label className="text-xs text-emerald-400 uppercase font-bold">Ajuste Manual (Encajar en Borde)</Label>
+                        
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-xs">
+                            <span>Escala Contenido</span>
+                            <span>{pitchSettings.cardContentScale}%</span>
+                          </div>
+                          <Slider 
+                            value={[pitchSettings.cardContentScale || 100]} 
+                            min={80} max={120} step={1}
+                            onValueChange={(v) => setPitchSettings(prev => ({...prev, cardContentScale: v[0]}))}
+                            className="[&>.relative>.absolute]:bg-emerald-500"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-xs">
+                            <span>Posición Vertical (Y)</span>
+                            <span>{pitchSettings.cardContentY}px</span>
+                          </div>
+                          <Slider 
+                            value={[pitchSettings.cardContentY || 0]} 
+                            min={-50} max={50} step={1}
+                            onValueChange={(v) => setPitchSettings(prev => ({...prev, cardContentY: v[0]}))}
+                            className="[&>.relative>.absolute]:bg-emerald-500"
                           />
                         </div>
                       </div>

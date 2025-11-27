@@ -17,13 +17,22 @@ export const TeamProvider = ({ children }) => {
   });
   
   const defaultSettings = {
-    formation: '4-3-3 (11v11)', // Must match a key in FORMATIONS
+    formation: '4-3-3 (11v11)',
     color: 'green', 
     texture: 'striped',
     kitColor: '#ef4444',
     kitNumberColor: '#ffffff',
+    
+    // Card Visual Settings
     cardColor: '#1e293b',
-    cardTexture: 'silk',
+    cardColor2: '#0f172a', // Secondary color for gradient
+    cardGradient: 'diagonal', // none, vertical, horizontal, diagonal
+    
+    // Card Fit Adjustments (Manual Calibration)
+    cardContentScale: 100, // %
+    cardContentY: 0, // px
+    cardContentX: 0, // px
+    
     viewMode: '2d',
   };
 
@@ -39,7 +48,6 @@ export const TeamProvider = ({ children }) => {
         
         if (data) {
           setPlayers(data.players || []);
-          // Merge settings carefully to preserve defaults if keys are missing
           setPitchSettings(prev => ({ ...prev, ...data.pitchSettings }));
           setClubInfo(prev => ({ ...prev, ...data.clubInfo }));
         }
@@ -89,10 +97,7 @@ export const TeamProvider = ({ children }) => {
   const applyFormation = (formationName) => {
     const layout = FORMATIONS[formationName];
     
-    if (!layout) {
-      console.error("Formation not found:", formationName);
-      return;
-    }
+    if (!layout) return;
 
     const updatedPlayers = players.map((player, index) => {
       if (index < layout.length) {
@@ -108,7 +113,6 @@ export const TeamProvider = ({ children }) => {
   const addPlayer = (playerData) => {
     const currentLayout = FORMATIONS[pitchSettings.formation] || [];
     const index = players.length;
-    // If squad is full for the formation, place in center
     const defaultPos = index < currentLayout.length 
       ? { x: currentLayout[index].x, y: currentLayout[index].y } 
       : { x: 50, y: 50 };

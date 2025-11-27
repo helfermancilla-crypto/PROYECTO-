@@ -39,7 +39,20 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
 
   const statsArr = Object.values(player.stats);
   const overall = Math.round(statsArr.reduce((a, b) => a + b, 0) / statsArr.length);
-  const cardColor = pitchSettings.cardColor || '#1e293b';
+  
+  // Colors & Gradient Logic
+  const color1 = pitchSettings.cardColor || '#1e293b';
+  const color2 = pitchSettings.cardColor2 || '#0f172a';
+  const gradientType = pitchSettings.cardGradient || 'diagonal';
+  
+  let backgroundStyle = { backgroundColor: color1 };
+  if (gradientType === 'vertical') backgroundStyle = { background: `linear-gradient(to bottom, ${color1}, ${color2})` };
+  if (gradientType === 'horizontal') backgroundStyle = { background: `linear-gradient(to right, ${color1}, ${color2})` };
+  if (gradientType === 'diagonal') backgroundStyle = { background: `linear-gradient(135deg, ${color1}, ${color2})` };
+
+  // Manual Fit Adjustments
+  const scale = (pitchSettings.cardContentScale || 100) / 100;
+  const translateY = pitchSettings.cardContentY || 0;
   
   const TEXTURE_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/xmbei8xh_textura%20de%20tela.png";
   const BORDER_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/g95tghim_borde%20dorado.png";
@@ -66,8 +79,8 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
               boxShadow: "0 0 30px rgba(0,0,0,0.5)"
             }}
           >
-            {/* 1. Base Color */}
-            <div className="absolute inset-0 z-0" style={{ backgroundColor: cardColor }}></div>
+            {/* 1. Base Color / Gradient */}
+            <div className="absolute inset-0 z-0" style={backgroundStyle}></div>
 
             {/* 2. Texture */}
             <div 
@@ -80,13 +93,18 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
               }}
             ></div>
 
-            {/* 3. Content Layer - INCREASED PADDING & SCALING */}
-            <div className="absolute inset-0 z-20 flex flex-col px-14 py-16">
+            {/* 3. Content Layer - With Manual Adjustments */}
+            <div 
+              className="absolute inset-0 z-20 flex flex-col px-14 py-16 transition-transform duration-200"
+              style={{
+                transform: `scale(${scale}) translateY(${translateY}px)`
+              }}
+            >
               
               {/* Top Section */}
               <div className="flex flex-1 relative">
                 
-                {/* Left Info Column - Moved slightly right */}
+                {/* Left Info Column */}
                 <div className="flex flex-col items-center w-[30%] pt-6 space-y-1 z-30 ml-2">
                   <div className="flex flex-col items-center leading-none">
                     <span className="text-[3rem] font-bold text-[#fde047] drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">{overall}</span>
@@ -110,7 +128,7 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
                   </div>
                 </div>
 
-                {/* Player Image - Scaled down further to fit */}
+                {/* Player Image */}
                 <div className="absolute top-4 right-[-20px] w-[200px] h-[240px] z-20 flex items-end justify-center">
                   {player.avatar ? (
                     <img 
@@ -124,7 +142,7 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
                 </div>
               </div>
 
-              {/* Bottom Section - Pushed UP to avoid bottom tip */}
+              {/* Bottom Section */}
               <div className="mt-auto relative z-30 pb-6">
                 {/* Name */}
                 <div className="text-center mb-2">
@@ -134,7 +152,7 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
                   <div className="h-[1px] w-3/4 mx-auto bg-gradient-to-r from-transparent via-[#fde047] to-transparent opacity-60"></div>
                 </div>
 
-                {/* Stats - Compact Grid */}
+                {/* Stats */}
                 <div className="grid grid-cols-2 gap-x-4 gap-y-0 px-2">
                   {displayStats.map((stat, i) => (
                     <div key={i} className="flex items-center justify-center gap-2">
