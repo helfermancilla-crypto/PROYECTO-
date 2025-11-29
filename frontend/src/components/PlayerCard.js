@@ -23,6 +23,12 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
   if (gradientType === 'horizontal') backgroundStyle = { background: `linear-gradient(to right, ${color1}, ${color2})` };
   if (gradientType === 'diagonal') backgroundStyle = { background: `linear-gradient(135deg, ${color1}, ${color2})` };
 
+  // Texture Settings
+  const texScale = pitchSettings.cardTextureScale || 150;
+  const texX = pitchSettings.cardTextureX || 50;
+  const texY = pitchSettings.cardTextureY || 50;
+  const texOpacity = pitchSettings.cardTextureOpacity ?? 0.5;
+
   // Manual Fit Adjustments (Global Content)
   const contentScale = (pitchSettings.cardContentScale || 100) / 100;
   const translateY = pitchSettings.cardContentY || 0;
@@ -32,7 +38,7 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
   const imgX = pitchSettings.playerImageX || 0;
   const imgY = pitchSettings.playerImageY || 0;
   
-  // Crops (Top, Right, Bottom, Left)
+  // Crops
   const cropTop = pitchSettings.playerImageCropTop || 0;
   const cropRight = pitchSettings.playerImageCropRight || 0;
   const cropBottom = pitchSettings.playerImageCropBottom || 0;
@@ -66,18 +72,20 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
       {/* 1. Base Color / Gradient */}
       <div className="absolute inset-0 z-0" style={backgroundStyle}></div>
 
-      {/* 2. Texture */}
+      {/* 2. Texture Layer (Adjustable) */}
       <div 
-        className="absolute inset-0 z-10 opacity-50 mix-blend-multiply"
+        className="absolute inset-0 z-10 mix-blend-multiply pointer-events-none"
         style={{
           backgroundImage: `url('${TEXTURE_URL}')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          backgroundSize: `${texScale}%`, // Use percentage to allow scaling
+          backgroundPosition: `${texX}% ${texY}%`,
+          backgroundRepeat: 'repeat', // Repeat to prevent gaps when scaling down
+          opacity: texOpacity,
           filter: 'contrast(1.2) brightness(1.1)'
         }}
       ></div>
 
-      {/* 3. Content Layer - With Manual Adjustments */}
+      {/* 3. Content Layer */}
       <div 
         className="absolute inset-0 z-20 flex flex-col px-14 py-16 transition-transform duration-200"
         style={{
@@ -112,7 +120,7 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
             </div>
           </div>
 
-          {/* Player Image - With Specific Adjustments */}
+          {/* Player Image */}
           <div className="absolute top-4 right-[-20px] w-[200px] h-[240px] z-20 flex items-end justify-center">
             {player.avatar ? (
               <img 
@@ -121,7 +129,7 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
                 className="w-full h-full object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)] transition-all duration-200"
                 style={{
                   transform: `scale(${imgScale}) translate(${imgX}px, ${imgY}px)`,
-                  clipPath: `inset(${cropTop}% ${cropRight}% ${cropBottom}% ${cropLeft}%)` // 4-side crop
+                  clipPath: `inset(${cropTop}% ${cropRight}% ${cropBottom}% ${cropLeft}%)`
                 }}
               />
             ) : (

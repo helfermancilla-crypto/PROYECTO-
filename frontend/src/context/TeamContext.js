@@ -28,18 +28,24 @@ export const TeamProvider = ({ children }) => {
     cardColor2: '#0f172a',
     cardGradient: 'diagonal',
     
+    // Texture Settings (NEW)
+    cardTextureScale: 150, // Start zoomed in a bit for cover effect
+    cardTextureX: 50,
+    cardTextureY: 50,
+    cardTextureOpacity: 0.5,
+    
     // Card Fit Adjustments (Global Content)
     cardContentScale: 100,
     cardContentY: 0,
     
     // Player Image Specific Adjustments
-    playerImageScale: 100, // %
-    playerImageX: 0, // px
-    playerImageY: 0, // px
-    playerImageCropTop: 0, // %
-    playerImageCropBottom: 0, // %
-    playerImageCropLeft: 0, // %
-    playerImageCropRight: 0, // %
+    playerImageScale: 100, 
+    playerImageX: 0, 
+    playerImageY: 0, 
+    playerImageCropTop: 0, 
+    playerImageCropBottom: 0, 
+    playerImageCropLeft: 0, 
+    playerImageCropRight: 0, 
     
     viewMode: '2d',
   };

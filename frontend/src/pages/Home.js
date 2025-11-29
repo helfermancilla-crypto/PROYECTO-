@@ -5,7 +5,7 @@ import Pitch from '../components/Pitch';
 import PlayerForm from '../components/PlayerForm';
 import PlayerCard, { CardVisual } from '../components/PlayerCard';
 import { Button } from "@/components/ui/button";
-import { Settings, Download, Upload, Plus, Palette, Layout, Shield, Crop, Image as ImageIcon, RefreshCcw, Check, Maximize } from 'lucide-react';
+import { Settings, Download, Upload, Plus, Share2, Palette, Layout, Activity, Shield, Trophy, Move, Maximize, Crop, Image as ImageIcon, RefreshCcw, Check, Layers } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -293,13 +293,12 @@ const Home = () => {
                             clubInfo={clubInfo} 
                           />
                         </div>
-                        {/* Spacer to compensate scale */}
                         <div className="h-[350px] lg:hidden"></div> 
                       </div>
                     </div>
 
                     {/* RIGHT COLUMN: CONTROLS */}
-                    <div className="flex-1 lg:flex-[0.6] space-y-8 pr-2">
+                    <div className="flex-1 lg:flex-[0.6] space-y-8 pr-2 pb-20">
                       
                       {/* 1. Quick Colors */}
                       <div className="space-y-3">
@@ -348,23 +347,33 @@ const Home = () => {
                           </Select>
                         </div>
 
-                        {/* 3. Card Fit (Global) */}
+                        {/* 3. Texture Controls (NEW) */}
                         <div className="space-y-4">
-                          <Label className="text-xs text-slate-400 uppercase font-bold flex gap-2"><Maximize className="w-3 h-3" /> Ajuste Global</Label>
+                          <Label className="text-xs text-slate-400 uppercase font-bold flex gap-2"><Layers className="w-3 h-3" /> Textura (Fondo)</Label>
                           <div className="space-y-3">
                             <div className="space-y-1">
-                              <div className="flex justify-between text-[10px]"><span>Escala</span><span>{pitchSettings.cardContentScale}%</span></div>
-                              <Slider value={[pitchSettings.cardContentScale || 100]} min={80} max={120} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, cardContentScale: v[0]}))} className="[&>.relative>.absolute]:bg-slate-500" />
+                              <div className="flex justify-between text-[10px]"><span>Escala (Zoom)</span><span>{pitchSettings.cardTextureScale || 150}%</span></div>
+                              <Slider value={[pitchSettings.cardTextureScale || 150]} min={50} max={200} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, cardTextureScale: v[0]}))} className="[&>.relative>.absolute]:bg-slate-500" />
                             </div>
                             <div className="space-y-1">
-                              <div className="flex justify-between text-[10px]"><span>Posición Y</span><span>{pitchSettings.cardContentY}px</span></div>
-                              <Slider value={[pitchSettings.cardContentY || 0]} min={-50} max={50} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, cardContentY: v[0]}))} className="[&>.relative>.absolute]:bg-slate-500" />
+                              <div className="flex justify-between text-[10px]"><span>Opacidad</span><span>{Math.round((pitchSettings.cardTextureOpacity ?? 0.5) * 100)}%</span></div>
+                              <Slider value={[(pitchSettings.cardTextureOpacity ?? 0.5) * 100]} min={0} max={100} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, cardTextureOpacity: v[0]/100}))} className="[&>.relative>.absolute]:bg-slate-500" />
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="space-y-1">
+                                    <div className="flex justify-between text-[10px]"><span>Pos X</span></div>
+                                    <Slider value={[pitchSettings.cardTextureX || 50]} min={0} max={100} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, cardTextureX: v[0]}))} className="[&>.relative>.absolute]:bg-slate-500" />
+                                </div>
+                                <div className="space-y-1">
+                                    <div className="flex justify-between text-[10px]"><span>Pos Y</span></div>
+                                    <Slider value={[pitchSettings.cardTextureY || 50]} min={0} max={100} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, cardTextureY: v[0]}))} className="[&>.relative>.absolute]:bg-slate-500" />
+                                </div>
                             </div>
                           </div>
                         </div>
                       </div>
 
-                      {/* 4. PLAYER IMAGE EDITOR (Expanded) */}
+                      {/* 4. PLAYER IMAGE EDITOR */}
                       <div className="space-y-4 border-t border-slate-800 pt-4">
                         <div className="flex items-center justify-between">
                           <Label className="text-xs text-emerald-400 uppercase font-bold flex items-center gap-2">
@@ -423,6 +432,21 @@ const Home = () => {
                             </div>
                           </div>
                         </div>
+                      </div>
+
+                      {/* Global Card Fit (Reduced visual prominence) */}
+                      <div className="space-y-4 border-t border-slate-800 pt-4 opacity-75 hover:opacity-100 transition-opacity">
+                          <Label className="text-xs text-slate-500 uppercase font-bold flex gap-2"><Maximize className="w-3 h-3" /> Ajuste Contenido (Global)</Label>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                              <div className="flex justify-between text-[10px]"><span>Escala</span><span>{pitchSettings.cardContentScale}%</span></div>
+                              <Slider value={[pitchSettings.cardContentScale || 100]} min={80} max={120} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, cardContentScale: v[0]}))} className="[&>.relative>.absolute]:bg-slate-600" />
+                            </div>
+                            <div className="space-y-1">
+                              <div className="flex justify-between text-[10px]"><span>Posición Y</span><span>{pitchSettings.cardContentY}px</span></div>
+                              <Slider value={[pitchSettings.cardContentY || 0]} min={-50} max={50} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, cardContentY: v[0]}))} className="[&>.relative>.absolute]:bg-slate-600" />
+                            </div>
+                          </div>
                       </div>
 
                       {/* Other Settings (Pitch/Kit) */}
