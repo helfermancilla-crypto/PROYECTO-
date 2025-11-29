@@ -28,11 +28,16 @@ export const TeamProvider = ({ children }) => {
     cardColor2: '#0f172a',
     cardGradient: 'diagonal',
     
-    // Texture Settings (NEW)
-    cardTextureScale: 150, // Start zoomed in a bit for cover effect
+    // Texture Settings
+    cardTextureScale: 150,
     cardTextureX: 50,
     cardTextureY: 50,
     cardTextureOpacity: 0.5,
+
+    // Border (Frame) Settings - NEW
+    cardBorderScale: 100,
+    cardBorderX: 0,
+    cardBorderY: 0,
     
     // Card Fit Adjustments (Global Content)
     cardContentScale: 100,

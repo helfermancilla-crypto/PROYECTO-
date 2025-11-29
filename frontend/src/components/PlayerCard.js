@@ -29,6 +29,11 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
   const texY = pitchSettings.cardTextureY || 50;
   const texOpacity = pitchSettings.cardTextureOpacity ?? 0.5;
 
+  // Border Settings (NEW)
+  const borderScale = pitchSettings.cardBorderScale || 100;
+  const borderX = pitchSettings.cardBorderX || 0;
+  const borderY = pitchSettings.cardBorderY || 0;
+
   // Manual Fit Adjustments (Global Content)
   const contentScale = (pitchSettings.cardContentScale || 100) / 100;
   const translateY = pitchSettings.cardContentY || 0;
@@ -72,14 +77,14 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
       {/* 1. Base Color / Gradient */}
       <div className="absolute inset-0 z-0" style={backgroundStyle}></div>
 
-      {/* 2. Texture Layer (Adjustable) */}
+      {/* 2. Texture Layer */}
       <div 
         className="absolute inset-0 z-10 mix-blend-multiply pointer-events-none"
         style={{
           backgroundImage: `url('${TEXTURE_URL}')`,
-          backgroundSize: `${texScale}%`, // Use percentage to allow scaling
+          backgroundSize: `${texScale}%`, 
           backgroundPosition: `${texX}% ${texY}%`,
-          backgroundRepeat: 'repeat', // Repeat to prevent gaps when scaling down
+          backgroundRepeat: 'repeat', 
           opacity: texOpacity,
           filter: 'contrast(1.2) brightness(1.1)'
         }}
@@ -174,13 +179,13 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
 
       </div>
 
-      {/* 4. Border Layer */}
+      {/* 4. Border Layer (ADJUSTABLE) */}
       <div 
-        className="absolute inset-0 z-40 pointer-events-none"
+        className="absolute inset-0 z-40 pointer-events-none transition-all duration-200"
         style={{
           backgroundImage: `url('${BORDER_URL}')`,
-          backgroundSize: '100% 100%',
-          backgroundPosition: 'center',
+          backgroundSize: `${borderScale}% ${borderScale}%`, // Scale both dimensions
+          backgroundPosition: `${50 + borderX}% ${50 + borderY}%`, // Center + Offset
           backgroundRepeat: 'no-repeat'
         }}
       ></div>

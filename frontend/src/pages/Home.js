@@ -5,7 +5,7 @@ import Pitch from '../components/Pitch';
 import PlayerForm from '../components/PlayerForm';
 import PlayerCard, { CardVisual } from '../components/PlayerCard';
 import { Button } from "@/components/ui/button";
-import { Settings, Download, Upload, Plus, Share2, Palette, Layout, Activity, Shield, Trophy, Move, Maximize, Crop, Image as ImageIcon, RefreshCcw, Check, Layers } from 'lucide-react';
+import { Settings, Download, Upload, Plus, Share2, Palette, Layout, Activity, Shield, Trophy, Move, Maximize, Crop, Image as ImageIcon, RefreshCcw, Check, Layers, BoxSelect } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -373,7 +373,26 @@ const Home = () => {
                         </div>
                       </div>
 
-                      {/* 4. PLAYER IMAGE EDITOR */}
+                      {/* 4. Border Controls (NEW) */}
+                      <div className="space-y-4 border-t border-slate-800 pt-4">
+                        <Label className="text-xs text-slate-400 uppercase font-bold flex gap-2"><BoxSelect className="w-3 h-3" /> Ajuste de Marco (Borde)</Label>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="space-y-1">
+                                <div className="flex justify-between text-[10px]"><span>Escala Marco</span><span>{pitchSettings.cardBorderScale || 100}%</span></div>
+                                <Slider value={[pitchSettings.cardBorderScale || 100]} min={90} max={110} step={0.5} onValueChange={(v) => setPitchSettings(prev => ({...prev, cardBorderScale: v[0]}))} className="[&>.relative>.absolute]:bg-yellow-500" />
+                            </div>
+                            <div className="space-y-1">
+                                <div className="flex justify-between text-[10px]"><span>Pos X</span><span>{pitchSettings.cardBorderX}px</span></div>
+                                <Slider value={[pitchSettings.cardBorderX || 0]} min={-20} max={20} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, cardBorderX: v[0]}))} className="[&>.relative>.absolute]:bg-yellow-500" />
+                            </div>
+                            <div className="space-y-1">
+                                <div className="flex justify-between text-[10px]"><span>Pos Y</span><span>{pitchSettings.cardBorderY}px</span></div>
+                                <Slider value={[pitchSettings.cardBorderY || 0]} min={-20} max={20} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, cardBorderY: v[0]}))} className="[&>.relative>.absolute]:bg-yellow-500" />
+                            </div>
+                        </div>
+                      </div>
+
+                      {/* 5. PLAYER IMAGE EDITOR */}
                       <div className="space-y-4 border-t border-slate-800 pt-4">
                         <div className="flex items-center justify-between">
                           <Label className="text-xs text-emerald-400 uppercase font-bold flex items-center gap-2">
