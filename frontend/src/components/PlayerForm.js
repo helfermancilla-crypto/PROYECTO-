@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +6,31 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Image as ImageIcon, Upload } from 'lucide-react';
+
+const COMMON_NATIONS = [
+  { name: 'Argentina', flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Flag_of_Argentina.svg/2560px-Flag_of_Argentina.svg.png' },
+  { name: 'Brasil', flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Flag_of_Brazil.svg/2560px-Flag_of_Brazil.svg.png' },
+  { name: 'España', flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png' },
+  { name: 'Francia', flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Flag_of_France.svg/2560px-Flag_of_France.svg.png' },
+  { name: 'Alemania', flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Flag_of_Germany.svg/2560px-Flag_of_Germany.svg.png' },
+  { name: 'Italia', flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Flag_of_Italy.svg/2560px-Flag_of_Italy.svg.png' },
+  { name: 'Inglaterra', flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Flag_of_England.svg/2560px-Flag_of_England.svg.png' },
+  { name: 'Portugal', flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Flag_of_Portugal.svg/2560px-Flag_of_Portugal.svg.png' },
+  { name: 'Holanda', flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Flag_of_the_Netherlands.svg/2560px-Flag_of_the_Netherlands.svg.png' },
+  { name: 'Bélgica', flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Flag_of_Belgium.svg/2560px-Flag_of_Belgium.svg.png' },
+  { name: 'Colombia', flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Flag_of_Colombia.svg/2560px-Flag_of_Colombia.svg.png' },
+  { name: 'Uruguay', flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Flag_of_Uruguay.svg/2560px-Flag_of_Uruguay.svg.png' },
+  { name: 'Chile', flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Flag_of_Chile.svg/2560px-Flag_of_Chile.svg.png' },
+  { name: 'México', flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Flag_of_Mexico.svg/2560px-Flag_of_Mexico.svg.png' },
+  { name: 'Perú', flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Flag_of_Peru.svg/2560px-Flag_of_Peru.svg.png' },
+  { name: 'EE.UU.', flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Flag_of_the_United_States.svg/2560px-Flag_of_the_United_States.svg.png' },
+  { name: 'Japón', flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Flag_of_Japan.svg/2560px-Flag_of_Japan.svg.png' },
+  { name: 'Corea del Sur', flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Flag_of_South_Korea.svg/2560px-Flag_of_South_Korea.svg.png' },
+  { name: 'Marruecos', flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Flag_of_Morocco.svg/2560px-Flag_of_Morocco.svg.png' },
+  { name: 'Croacia', flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Flag_of_Croatia.svg/2560px-Flag_of_Croatia.svg.png' },
+  { name: 'Personalizado', flag: '' }
+];
 
 const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => {
   const [formData, setFormData] = React.useState({
@@ -16,14 +41,12 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
     nation: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png',
     avatar: '',
     stats: {
-      pac: 70,
-      sho: 70,
-      pas: 70,
-      dri: 70,
-      def: 70,
-      phy: 70
+      pac: 70, sho: 70, pas: 70, dri: 70, def: 70, phy: 70
     }
   });
+
+  const [nationSelection, setNationSelection] = React.useState('España');
+  const fileInputRef = useRef(null);
 
   React.useEffect(() => {
     if (initialData) {
@@ -39,7 +62,16 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
           phy: stats.phy || stats.stamina || 70
         }
       });
+      
+      // Try to find if the nation matches a preset
+      const foundNation = COMMON_NATIONS.find(n => n.flag === initialData.nation);
+      if (foundNation) {
+        setNationSelection(foundNation.name);
+      } else {
+        setNationSelection('Personalizado');
+      }
     } else {
+      // Default new player
       setFormData({
         name: '',
         nickname: '',
@@ -47,15 +79,9 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
         role: 'MID',
         nation: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png',
         avatar: '',
-        stats: {
-          pac: 70,
-          sho: 70,
-          pas: 70,
-          dri: 70,
-          def: 70,
-          phy: 70
-        }
+        stats: { pac: 70, sho: 70, pas: 70, dri: 70, def: 70, phy: 70 }
       });
+      setNationSelection('España');
     }
   }, [initialData, open]);
 
@@ -64,7 +90,6 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
   };
 
   const handleStatChange = (stat, value) => {
-    // Ensure value is a valid number between 0 and 99
     let safeValue = parseInt(value);
     if (isNaN(safeValue)) safeValue = 0;
     if (safeValue > 99) safeValue = 99;
@@ -82,6 +107,28 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
       const reader = new FileReader();
       reader.onloadend = () => {
         handleChange('avatar', reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleNationChange = (value) => {
+    setNationSelection(value);
+    const selected = COMMON_NATIONS.find(n => n.name === value);
+    if (selected && selected.name !== 'Personalizado') {
+      handleChange('nation', selected.flag);
+    } else {
+      // Keep existing if switching to custom, or clear it? Let's keep it to be safe
+      // User will upload new one
+    }
+  };
+
+  const handleNationUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        handleChange('nation', reader.result);
       };
       reader.readAsDataURL(file);
     }
@@ -165,32 +212,75 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
                 </div>
               </div>
 
+              {/* NATION SELECTOR */}
               <div className="space-y-2">
-                <Label>Nacionalidad (URL Bandera)</Label>
-                <div className="flex gap-2">
-                   <Input 
-                    value={formData.nation} 
-                    onChange={e => handleChange('nation', e.target.value)} 
-                    className="bg-slate-800 border-slate-700"
-                    placeholder="https://..."
-                  />
-                  {formData.nation && (
-                    <img src={formData.nation} alt="Flag" className="w-10 h-auto object-contain rounded border border-slate-600" />
-                  )}
+                <Label>Nacionalidad</Label>
+                <div className="flex gap-2 items-center">
+                   <div className="flex-1">
+                     <Select value={nationSelection} onValueChange={handleNationChange}>
+                        <SelectTrigger className="bg-slate-800 border-slate-700">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-800 border-slate-700 text-white max-h-[200px]">
+                          {COMMON_NATIONS.map(nation => (
+                            <SelectItem key={nation.name} value={nation.name}>
+                              <div className="flex items-center gap-2">
+                                {nation.flag && <img src={nation.flag} alt={nation.name} className="w-5 h-3 object-cover" />}
+                                <span>{nation.name}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                     </Select>
+                   </div>
+                   
+                   {/* Preview Flag */}
+                   <div className="w-10 h-8 bg-slate-800 border border-slate-700 rounded flex items-center justify-center overflow-hidden">
+                      {formData.nation ? (
+                        <img src={formData.nation} alt="Flag" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-xs text-slate-500">?</span>
+                      )}
+                   </div>
                 </div>
+
+                {/* Custom Upload Option */}
+                {nationSelection === 'Personalizado' && (
+                  <div className="mt-2">
+                    <Label className="text-xs text-slate-400 mb-1 block">Subir Bandera Personalizada</Label>
+                    <div className="relative">
+                      <Button type="button" variant="outline" className="w-full border-dashed border-slate-600 text-slate-400 hover:text-white hover:bg-slate-800" onClick={() => fileInputRef.current?.click()}>
+                        <Upload className="w-4 h-4 mr-2" /> Seleccionar Imagen
+                      </Button>
+                      <input 
+                        type="file" 
+                        ref={fileInputRef}
+                        className="hidden" 
+                        accept="image/*"
+                        onChange={handleNationUpload}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
                 <Label>Foto / Avatar</Label>
-                <Input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={handleImageUpload} 
-                  className="bg-slate-800 border-slate-700 cursor-pointer"
-                />
+                <div className="relative">
+                  <Button type="button" variant="outline" className="w-full justify-start bg-slate-800 border-slate-700 text-slate-300 hover:text-white hover:bg-slate-700 relative">
+                    <ImageIcon className="w-4 h-4 mr-2" /> 
+                    {formData.avatar ? 'Cambiar Foto' : 'Subir Foto'}
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleImageUpload} 
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                    />
+                  </Button>
+                </div>
                 {formData.avatar && (
                   <div className="mt-2 flex justify-center">
-                    <img src={formData.avatar} alt="Preview" className="w-20 h-20 rounded-full object-cover border-2 border-emerald-500" />
+                    <img src={formData.avatar} alt="Preview" className="w-20 h-20 rounded-full object-cover border-2 border-emerald-500 shadow-lg" />
                   </div>
                 )}
               </div>
@@ -204,7 +294,6 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
                       {statLabels[key] || key}
                     </Label>
                     
-                    {/* RAW INPUT REPLACEMENT FOR STABILITY */}
                     <input
                       type="number"
                       value={val}
