@@ -38,8 +38,7 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
   const contentScale = (pitchSettings.cardContentScale || 100) / 100;
   const translateY = pitchSettings.cardContentY || 0;
 
-  // Player Image Specific Adjustments (Individual vs Global)
-  // If player has photoSettings, use them. Otherwise default to 0/100 (neutral)
+  // Player Image Specific Adjustments
   const pSet = player.photoSettings || {};
   const imgScale = (pSet.scale || 100) / 100;
   const imgX = pSet.x || 0;
@@ -137,7 +136,8 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
                 className="w-full h-full object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)] transition-all duration-200"
                 style={{
                   transform: `scale(${imgScale}) translate(${imgX}px, ${imgY}px)`,
-                  clipPath: `inset(${cropTop}% ${cropRight}% ${cropBottom}% ${cropLeft}%)`
+                  clipPath: `inset(${cropTop}% ${cropRight}% ${cropBottom}% ${cropLeft}%)`,
+                  zIndex: 25 // Increased z-index for visibility
                 }}
               />
             ) : (
