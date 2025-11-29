@@ -36,7 +36,10 @@ export const TeamProvider = ({ children }) => {
     playerImageScale: 100, // %
     playerImageX: 0, // px
     playerImageY: 0, // px
+    playerImageCropTop: 0, // %
     playerImageCropBottom: 0, // %
+    playerImageCropLeft: 0, // %
+    playerImageCropRight: 0, // %
     
     viewMode: '2d',
   };

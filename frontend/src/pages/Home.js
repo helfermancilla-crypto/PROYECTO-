@@ -5,7 +5,7 @@ import Pitch from '../components/Pitch';
 import PlayerForm from '../components/PlayerForm';
 import PlayerCard, { CardVisual } from '../components/PlayerCard';
 import { Button } from "@/components/ui/button";
-import { Settings, Download, Upload, Plus, Share2, Palette, Layout, Activity, Shield, Trophy, Move, Maximize, Crop, Image as ImageIcon } from 'lucide-react';
+import { Settings, Download, Upload, Plus, Palette, Layout, Shield, Crop, Image as ImageIcon, RefreshCcw, Check } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -115,6 +115,37 @@ const Home = () => {
     }
   };
 
+  const resetPhotoSettings = () => {
+    setPitchSettings(prev => ({
+      ...prev,
+      playerImageScale: 100,
+      playerImageX: 0,
+      playerImageY: 0,
+      playerImageCropTop: 0,
+      playerImageCropBottom: 0,
+      playerImageCropLeft: 0,
+      playerImageCropRight: 0,
+    }));
+    toast.info("Ajustes de foto restablecidos");
+  };
+
+  // Preset colors
+  const colorPresets = [
+    { name: 'Rojo', c1: '#ef4444', c2: '#7f1d1d' },
+    { name: 'Azul', c1: '#3b82f6', c2: '#1e3a8a' },
+    { name: 'Verde', c1: '#22c55e', c2: '#14532d' },
+    { name: 'Dorado', c1: '#eab308', c2: '#713f12' },
+    { name: 'Negro', c1: '#334155', c2: '#0f172a' },
+  ];
+
+  const applyPreset = (preset) => {
+    setPitchSettings(prev => ({
+      ...prev,
+      cardColor: preset.c1,
+      cardColor2: preset.c2
+    }));
+  };
+
   // Calculate Team Stats
   const calculateTeamStats = () => {
     if (players.length === 0) return { overall: 0, att: 0, mid: 0, def: 0 };
@@ -142,14 +173,14 @@ const Home = () => {
 
   const teamStats = calculateTeamStats();
 
-  // Dummy player for preview - NOW WITH AVATAR
+  // Dummy player for preview
   const previewPlayer = {
     name: 'JUGADOR',
     role: 'FWD',
     number: '10',
     nation: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png',
-    avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=300&auto=format&fit=crop', // Added default avatar
-    stats: { speed: 90, dribbling: 88, shooting: 85, heading: 70, passing: 82, stamina: 80, reception: 85 }
+    avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=300&auto=format&fit=crop',
+    stats: { pac: 90, dri: 88, sho: 85, def: 70, pas: 82, phy: 80, rec: 85 }
   };
 
   return (
@@ -241,228 +272,191 @@ const Home = () => {
                     <Settings className="w-5 h-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent className="bg-slate-900 border-slate-800 text-white overflow-y-auto sm:max-w-[450px]">
+                
+                {/* INCREASED WIDTH TO 1000px FOR SIDE-BY-SIDE LAYOUT */}
+                <SheetContent className="bg-slate-900 border-slate-800 text-white overflow-y-auto w-full sm:max-w-[1000px]">
                   <SheetHeader>
-                    <SheetTitle className="text-emerald-400">Configuración Visual</SheetTitle>
+                    <SheetTitle className="text-emerald-400">Estación de Edición</SheetTitle>
                   </SheetHeader>
-                  <div className="py-6 space-y-8">
+                  
+                  {/* NEW SIDE-BY-SIDE LAYOUT */}
+                  <div className="flex flex-col lg:flex-row h-full py-6 gap-8">
                     
-                    {/* LIVE PREVIEW SECTION - FIXED SPACING & AVATAR */}
-                    <div className="flex flex-col items-center space-y-2 bg-slate-950/50 p-4 rounded-lg border border-slate-800">
-                      <Label className="text-xs text-emerald-400 uppercase font-bold tracking-wider mb-2">Vista Previa en Vivo</Label>
-                      {/* Use scale prop instead of CSS transform to fix spacing */}
-                      <CardVisual 
-                        player={previewPlayer} 
-                        pitchSettings={pitchSettings} 
-                        clubInfo={clubInfo} 
-                        scale={0.6}
-                      />
+                    {/* LEFT COLUMN: STICKY PREVIEW */}
+                    <div className="flex-1 lg:flex-[0.4] flex flex-col items-center lg:items-end lg:sticky lg:top-0">
+                      <div className="bg-slate-950/50 p-6 rounded-xl border border-slate-800 shadow-2xl flex flex-col items-center gap-4 w-full">
+                        <Label className="text-sm text-emerald-400 uppercase font-bold tracking-wider">Vista Previa</Label>
+                        <div className="scale-75 origin-top">
+                          <CardVisual 
+                            player={previewPlayer} 
+                            pitchSettings={pitchSettings} 
+                            clubInfo={clubInfo} 
+                          />
+                        </div>
+                        {/* Spacer to compensate scale */}
+                        <div className="h-[350px] lg:hidden"></div> 
+                      </div>
                     </div>
 
-                    {/* Card Settings */}
-                    <div className="space-y-4 border-b border-slate-800 pb-4">
-                      <div className="flex items-center gap-2 text-slate-300 font-bold uppercase text-xs tracking-wider">
-                        <Shield className="w-4 h-4" /> Personalización de Tarjeta
-                      </div>
+                    {/* RIGHT COLUMN: CONTROLS */}
+                    <div className="flex-1 lg:flex-[0.6] space-y-8 pr-2">
                       
-                      {/* Colors */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>Color Principal</Label>
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded border border-slate-600 shadow-sm" style={{backgroundColor: pitchSettings.cardColor}}></div>
-                            <Input 
-                              type="color" 
-                              value={pitchSettings.cardColor}
-                              onChange={(e) => setPitchSettings(prev => ({...prev, cardColor: e.target.value}))}
-                              className="w-full h-8 p-1 bg-slate-800 border-slate-700"
+                      {/* 1. Quick Colors */}
+                      <div className="space-y-3">
+                        <Label className="text-xs text-slate-400 uppercase font-bold tracking-wider">Estilos Rápidos</Label>
+                        <div className="flex gap-2 flex-wrap">
+                          {colorPresets.map(p => (
+                            <button 
+                              key={p.name}
+                              onClick={() => applyPreset(p)}
+                              className="w-8 h-8 rounded-full border-2 border-slate-600 hover:scale-110 transition-transform shadow-md"
+                              style={{ background: `linear-gradient(135deg, ${p.c1}, ${p.c2})` }}
+                              title={p.name}
                             />
-                          </div>
+                          ))}
                         </div>
-                        <div className="space-y-2">
-                          <Label>Color Secundario</Label>
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded border border-slate-600 shadow-sm" style={{backgroundColor: pitchSettings.cardColor2}}></div>
-                            <Input 
-                              type="color" 
-                              value={pitchSettings.cardColor2}
-                              onChange={(e) => setPitchSettings(prev => ({...prev, cardColor2: e.target.value}))}
-                              className="w-full h-8 p-1 bg-slate-800 border-slate-700"
-                            />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* 2. Colors & Gradient */}
+                        <div className="space-y-4">
+                          <Label className="text-xs text-slate-400 uppercase font-bold flex gap-2"><Palette className="w-3 h-3" /> Colores</Label>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <Label className="text-[10px] text-slate-500">Principal</Label>
+                              <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded border border-slate-600" style={{backgroundColor: pitchSettings.cardColor}}></div>
+                                <Input type="color" value={pitchSettings.cardColor} onChange={(e) => setPitchSettings(prev => ({...prev, cardColor: e.target.value}))} className="h-8 p-1 bg-slate-800 border-slate-700" />
+                              </div>
+                            </div>
+                            <div>
+                              <Label className="text-[10px] text-slate-500">Secundario</Label>
+                              <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded border border-slate-600" style={{backgroundColor: pitchSettings.cardColor2}}></div>
+                                <Input type="color" value={pitchSettings.cardColor2} onChange={(e) => setPitchSettings(prev => ({...prev, cardColor2: e.target.value}))} className="h-8 p-1 bg-slate-800 border-slate-700" />
+                              </div>
+                            </div>
+                          </div>
+                          <Select value={pitchSettings.cardGradient} onValueChange={(v) => setPitchSettings(prev => ({...prev, cardGradient: v}))}>
+                            <SelectTrigger className="bg-slate-800 border-slate-700 h-8 text-xs"><SelectValue /></SelectTrigger>
+                            <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                              <SelectItem value="none">Sólido</SelectItem>
+                              <SelectItem value="vertical">Vertical</SelectItem>
+                              <SelectItem value="horizontal">Horizontal</SelectItem>
+                              <SelectItem value="diagonal">Diagonal</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* 3. Card Fit (Global) */}
+                        <div className="space-y-4">
+                          <Label className="text-xs text-slate-400 uppercase font-bold flex gap-2"><Maximize className="w-3 h-3" /> Ajuste Global</Label>
+                          <div className="space-y-3">
+                            <div className="space-y-1">
+                              <div className="flex justify-between text-[10px]"><span>Escala</span><span>{pitchSettings.cardContentScale}%</span></div>
+                              <Slider value={[pitchSettings.cardContentScale || 100]} min={80} max={120} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, cardContentScale: v[0]}))} className="[&>.relative>.absolute]:bg-slate-500" />
+                            </div>
+                            <div className="space-y-1">
+                              <div className="flex justify-between text-[10px]"><span>Posición Y</span><span>{pitchSettings.cardContentY}px</span></div>
+                              <Slider value={[pitchSettings.cardContentY || 0]} min={-50} max={50} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, cardContentY: v[0]}))} className="[&>.relative>.absolute]:bg-slate-500" />
+                            </div>
                           </div>
                         </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label>Tipo de Gradiente</Label>
-                        <Select 
-                          value={pitchSettings.cardGradient} 
-                          onValueChange={(v) => setPitchSettings(prev => ({...prev, cardGradient: v}))}
-                        >
-                          <SelectTrigger className="bg-slate-800 border-slate-700">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="bg-slate-800 border-slate-700 text-white">
-                            <SelectItem value="none">Sólido</SelectItem>
-                            <SelectItem value="vertical">Vertical</SelectItem>
-                            <SelectItem value="horizontal">Horizontal</SelectItem>
-                            <SelectItem value="diagonal">Diagonal</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Manual Fit Controls */}
-                      <div className="space-y-3 pt-2">
-                        <Label className="text-xs text-emerald-400 uppercase font-bold">Ajuste Manual (Encajar en Borde)</Label>
+                      {/* 4. PLAYER IMAGE EDITOR (Expanded) */}
+                      <div className="space-y-4 border-t border-slate-800 pt-4">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs text-emerald-400 uppercase font-bold flex items-center gap-2">
+                            <ImageIcon className="w-3 h-3" /> Editor de Foto
+                          </Label>
+                          <Button size="xs" variant="ghost" onClick={resetPhotoSettings} className="h-6 text-[10px] text-slate-400 hover:text-white hover:bg-slate-800">
+                            <RefreshCcw className="w-3 h-3 mr-1" /> Resetear
+                          </Button>
+                        </div>
                         
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-xs">
-                            <span>Escala Contenido</span>
-                            <span>{pitchSettings.cardContentScale}%</span>
-                          </div>
-                          <Slider 
-                            value={[pitchSettings.cardContentScale || 100]} 
-                            min={80} max={120} step={1}
-                            onValueChange={(v) => setPitchSettings(prev => ({...prev, cardContentScale: v[0]}))}
-                            className="[&>.relative>.absolute]:bg-emerald-500"
-                          />
-                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* Zoom & Position */}
+                          <div className="space-y-3 bg-slate-950/30 p-3 rounded border border-slate-800">
+                            <Label className="text-[10px] text-slate-500 font-bold uppercase">Transformación</Label>
+                            
+                            <div className="space-y-1">
+                              <div className="flex justify-between text-[10px]"><span>Zoom</span><input type="number" value={pitchSettings.playerImageScale} onChange={(e) => setPitchSettings(prev => ({...prev, playerImageScale: parseInt(e.target.value)}))} className="w-10 bg-transparent text-right outline-none" />%</div>
+                              <Slider value={[pitchSettings.playerImageScale || 100]} min={50} max={150} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, playerImageScale: v[0]}))} className="[&>.relative>.absolute]:bg-blue-500" />
+                            </div>
 
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-xs">
-                            <span>Posición Vertical (Y)</span>
-                            <span>{pitchSettings.cardContentY}px</span>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="space-y-1">
+                                <div className="flex justify-between text-[10px]"><span>X</span><span>{pitchSettings.playerImageX}</span></div>
+                                <Slider value={[pitchSettings.playerImageX || 0]} min={-100} max={100} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, playerImageX: v[0]}))} className="[&>.relative>.absolute]:bg-blue-500" />
+                              </div>
+                              <div className="space-y-1">
+                                <div className="flex justify-between text-[10px]"><span>Y</span><span>{pitchSettings.playerImageY}</span></div>
+                                <Slider value={[pitchSettings.playerImageY || 0]} min={-100} max={100} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, playerImageY: v[0]}))} className="[&>.relative>.absolute]:bg-blue-500" />
+                              </div>
+                            </div>
                           </div>
-                          <Slider 
-                            value={[pitchSettings.cardContentY || 0]} 
-                            min={-50} max={50} step={1}
-                            onValueChange={(v) => setPitchSettings(prev => ({...prev, cardContentY: v[0]}))}
-                            className="[&>.relative>.absolute]:bg-emerald-500"
-                          />
+
+                          {/* Crop Controls */}
+                          <div className="space-y-3 bg-slate-950/30 p-3 rounded border border-slate-800">
+                            <Label className="text-[10px] text-slate-500 font-bold uppercase flex items-center gap-1"><Crop className="w-3 h-3" /> Recortes (Crop)</Label>
+                            
+                            <div className="space-y-1">
+                              <div className="flex justify-between text-[10px]"><span>Superior (Top)</span><span>{pitchSettings.playerImageCropTop}%</span></div>
+                              <Slider value={[pitchSettings.playerImageCropTop || 0]} min={0} max={50} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, playerImageCropTop: v[0]}))} className="[&>.relative>.absolute]:bg-red-500" />
+                            </div>
+
+                            <div className="space-y-1">
+                              <div className="flex justify-between text-[10px]"><span>Inferior (Bottom)</span><span>{pitchSettings.playerImageCropBottom}%</span></div>
+                              <Slider value={[pitchSettings.playerImageCropBottom || 0]} min={0} max={50} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, playerImageCropBottom: v[0]}))} className="[&>.relative>.absolute]:bg-red-500" />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="space-y-1">
+                                <div className="flex justify-between text-[10px]"><span>Izq (L)</span><span>{pitchSettings.playerImageCropLeft}%</span></div>
+                                <Slider value={[pitchSettings.playerImageCropLeft || 0]} min={0} max={50} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, playerImageCropLeft: v[0]}))} className="[&>.relative>.absolute]:bg-red-500" />
+                              </div>
+                              <div className="space-y-1">
+                                <div className="flex justify-between text-[10px]"><span>Der (R)</span><span>{pitchSettings.playerImageCropRight}%</span></div>
+                                <Slider value={[pitchSettings.playerImageCropRight || 0]} min={0} max={50} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, playerImageCropRight: v[0]}))} className="[&>.relative>.absolute]:bg-red-500" />
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Player Image Controls */}
-                      <div className="space-y-3 pt-2 border-t border-slate-800 mt-2">
-                        <Label className="text-xs text-emerald-400 uppercase font-bold flex items-center gap-2">
-                          <ImageIcon className="w-3 h-3" /> Ajuste de Foto Jugador
-                        </Label>
-                        
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-xs">
-                            <span>Zoom Foto</span>
-                            <span>{pitchSettings.playerImageScale || 100}%</span>
-                          </div>
-                          <Slider 
-                            value={[pitchSettings.playerImageScale || 100]} 
-                            min={50} max={150} step={1}
-                            onValueChange={(v) => setPitchSettings(prev => ({...prev, playerImageScale: v[0]}))}
-                            className="[&>.relative>.absolute]:bg-blue-500"
-                          />
-                        </div>
-
+                      {/* Other Settings (Pitch/Kit) */}
+                      <div className="space-y-4 border-t border-slate-800 pt-4">
+                        <Label className="text-xs text-slate-400 uppercase font-bold">Otros Ajustes</Label>
                         <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-1">
-                            <div className="flex justify-between text-xs">
-                              <span>Posición X</span>
-                              <span>{pitchSettings.playerImageX || 0}</span>
+                          <div className="space-y-2">
+                            <Label className="text-[10px]">Color Borde Ficha</Label>
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded border border-slate-600" style={{backgroundColor: pitchSettings.kitColor}}></div>
+                              <Input type="color" value={pitchSettings.kitColor} onChange={(e) => setPitchSettings(prev => ({...prev, kitColor: e.target.value}))} className="h-8 p-1 bg-slate-800 border-slate-700" />
                             </div>
-                            <Slider 
-                              value={[pitchSettings.playerImageX || 0]} 
-                              min={-100} max={100} step={1}
-                              onValueChange={(v) => setPitchSettings(prev => ({...prev, playerImageX: v[0]}))}
-                              className="[&>.relative>.absolute]:bg-blue-500"
-                            />
                           </div>
-                          <div className="space-y-1">
-                            <div className="flex justify-between text-xs">
-                              <span>Posición Y</span>
-                              <span>{pitchSettings.playerImageY || 0}</span>
-                            </div>
-                            <Slider 
-                              value={[pitchSettings.playerImageY || 0]} 
-                              min={-100} max={100} step={1}
-                              onValueChange={(v) => setPitchSettings(prev => ({...prev, playerImageY: v[0]}))}
-                              className="[&>.relative>.absolute]:bg-blue-500"
-                            />
+                          <div className="space-y-2">
+                            <Label className="text-[10px]">Color Campo</Label>
+                            <Select value={pitchSettings.color} onValueChange={(v) => setPitchSettings(prev => ({...prev, color: v}))}>
+                              <SelectTrigger className="bg-slate-800 border-slate-700 h-8 text-xs"><SelectValue /></SelectTrigger>
+                              <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                                <SelectItem value="green">Verde</SelectItem>
+                                <SelectItem value="red">Rojo</SelectItem>
+                                <SelectItem value="blue">Azul</SelectItem>
+                                <SelectItem value="black">Negro</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
                         </div>
+                      </div>
 
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-xs">
-                            <span>Recorte Inferior (Crop)</span>
-                            <span>{pitchSettings.playerImageCropBottom || 0}%</span>
-                          </div>
-                          <Slider 
-                            value={[pitchSettings.playerImageCropBottom || 0]} 
-                            min={0} max={50} step={1}
-                            onValueChange={(v) => setPitchSettings(prev => ({...prev, playerImageCropBottom: v[0]}))}
-                            className="[&>.relative>.absolute]:bg-red-500"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Kit Settings */}
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2 text-slate-300 font-bold uppercase text-xs tracking-wider">
-                        <Palette className="w-4 h-4" /> Personalización de Equipación
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Color del Borde (Ficha)</Label>
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded border border-slate-600 shadow-sm" style={{backgroundColor: pitchSettings.kitColor}}></div>
-                          <Input 
-                            type="color" 
-                            value={pitchSettings.kitColor}
-                            onChange={(e) => setPitchSettings(prev => ({...prev, kitColor: e.target.value}))}
-                            className="w-full h-8 p-1 bg-slate-800 border-slate-700"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Pitch Settings */}
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2 text-slate-300 font-bold uppercase text-xs tracking-wider">
-                        <Settings className="w-4 h-4" /> Opciones del Campo
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label>Color del Campo</Label>
-                        <Select 
-                          value={pitchSettings.color} 
-                          onValueChange={(v) => setPitchSettings(prev => ({...prev, color: v}))}
-                        >
-                          <SelectTrigger className="bg-slate-800 border-slate-700">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="bg-slate-800 border-slate-700 text-white">
-                            <SelectItem value="green">Verde Clásico</SelectItem>
-                            <SelectItem value="red">Rojo Infierno</SelectItem>
-                            <SelectItem value="blue">Azul Noche</SelectItem>
-                            <SelectItem value="black">Obsidiana</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div className="pt-4 border-t border-slate-800 space-y-3">
-                      <Label className="text-slate-400 uppercase text-xs font-bold tracking-wider">Gestión de Datos</Label>
-                      <Button onClick={handleExportJSON} variant="outline" className="w-full justify-start border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white">
-                        <Download className="w-4 h-4 mr-2" /> Exportar Equipo JSON
-                      </Button>
-                      <div className="relative">
-                        <Button variant="outline" className="w-full justify-start border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white">
-                          <Upload className="w-4 h-4 mr-2" /> Importar Equipo JSON
+                      <div className="pt-4 border-t border-slate-800">
+                        <Button onClick={handleExportJSON} variant="outline" className="w-full justify-start border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white h-8 text-xs">
+                          <Download className="w-3 h-3 mr-2" /> Exportar Datos
                         </Button>
-                        <input 
-                          type="file" 
-                          accept=".json" 
-                          onChange={handleImportJSON}
-                          className="absolute inset-0 opacity-0 cursor-pointer"
-                        />
                       </div>
+
                     </div>
                   </div>
                 </SheetContent>

@@ -31,7 +31,12 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
   const imgScale = (pitchSettings.playerImageScale || 100) / 100;
   const imgX = pitchSettings.playerImageX || 0;
   const imgY = pitchSettings.playerImageY || 0;
-  const imgCropBottom = pitchSettings.playerImageCropBottom || 0;
+  
+  // Crops (Top, Right, Bottom, Left)
+  const cropTop = pitchSettings.playerImageCropTop || 0;
+  const cropRight = pitchSettings.playerImageCropRight || 0;
+  const cropBottom = pitchSettings.playerImageCropBottom || 0;
+  const cropLeft = pitchSettings.playerImageCropLeft || 0;
   
   const TEXTURE_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/xmbei8xh_textura%20de%20tela.png";
   const BORDER_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/g95tghim_borde%20dorado.png";
@@ -116,7 +121,7 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
                 className="w-full h-full object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)] transition-all duration-200"
                 style={{
                   transform: `scale(${imgScale}) translate(${imgX}px, ${imgY}px)`,
-                  clipPath: `inset(0 0 ${imgCropBottom}% 0)` // Crop from bottom
+                  clipPath: `inset(${cropTop}% ${cropRight}% ${cropBottom}% ${cropLeft}%)` // 4-side crop
                 }}
               />
             ) : (
