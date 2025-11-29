@@ -34,9 +34,10 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
   const borderX = pitchSettings.cardBorderX || 0;
   const borderY = pitchSettings.cardBorderY || 0;
 
-  // Manual Fit Adjustments (Global Content)
+  // Manual Fit Adjustments (Global Content - TEXT & INFO)
   const contentScale = (pitchSettings.cardContentScale || 100) / 100;
-  const translateY = pitchSettings.cardContentY || 0;
+  const contentX = pitchSettings.cardContentX || 0;
+  const contentY = pitchSettings.cardContentY || 0;
 
   // Player Image Specific Adjustments
   const pSet = player.photoSettings || {};
@@ -92,15 +93,15 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
         }}
       ></div>
 
-      {/* 3. Content Layer */}
+      {/* 3. Content Layer (Text & Info) - SEPARATED FROM IMAGE */}
       <div 
-        className="absolute inset-0 z-20 flex flex-col px-14 py-16 transition-transform duration-200"
+        className="absolute inset-0 z-30 flex flex-col px-14 py-16 pointer-events-none"
         style={{
-          transform: `scale(${contentScale}) translateY(${translateY}px)`
+          transform: `scale(${contentScale}) translate(${contentX}px, ${contentY}px)`
         }}
       >
         
-        {/* Top Section */}
+        {/* Top Section Info (Rating, Club, Nation) */}
         <div className="flex flex-1 relative">
           
           {/* Left Info Column */}
@@ -127,26 +128,9 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
             </div>
           </div>
 
-          {/* Player Image - With INDIVIDUAL Adjustments */}
-          <div className="absolute top-4 right-[-20px] w-[200px] h-[240px] z-20 flex items-end justify-center">
-            {player.avatar ? (
-              <img 
-                src={player.avatar} 
-                alt={player.name} 
-                className="w-full h-full object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)] transition-all duration-200"
-                style={{
-                  transform: `scale(${imgScale}) translate(${imgX}px, ${imgY}px)`,
-                  clipPath: `inset(${cropTop}% ${cropRight}% ${cropBottom}% ${cropLeft}%)`,
-                  zIndex: 25 // Increased z-index for visibility
-                }}
-              />
-            ) : (
-              <div className="text-white/20 text-8xl font-fifa">?</div>
-            )}
-          </div>
         </div>
 
-        {/* Bottom Section */}
+        {/* Bottom Section (Name & Stats) */}
         <div className="mt-auto relative z-30 pb-6">
           {/* Name */}
           <div className="text-center mb-2">
@@ -180,6 +164,27 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
           )}
         </div>
 
+      </div>
+
+      {/* 3b. Image Layer (Separate for Independent Control) */}
+      <div className="absolute inset-0 z-20 px-14 py-16 flex flex-col pointer-events-none">
+          <div className="flex flex-1 relative">
+            <div className="absolute top-4 right-[-20px] w-[200px] h-[240px] z-20 flex items-end justify-center">
+                {player.avatar ? (
+                <img 
+                    src={player.avatar} 
+                    alt={player.name} 
+                    className="w-full h-full object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)] transition-all duration-200"
+                    style={{
+                    transform: `scale(${imgScale}) translate(${imgX}px, ${imgY}px)`,
+                    clipPath: `inset(${cropTop}% ${cropRight}% ${cropBottom}% ${cropLeft}%)`
+                    }}
+                />
+                ) : (
+                <div className="text-white/20 text-8xl font-fifa">?</div>
+                )}
+            </div>
+          </div>
       </div>
 
       {/* 4. Border Layer (ADJUSTABLE) */}

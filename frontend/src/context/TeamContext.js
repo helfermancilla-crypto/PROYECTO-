@@ -39,8 +39,9 @@ export const TeamProvider = ({ children }) => {
     cardBorderX: 0,
     cardBorderY: 0,
     
-    // GLOBAL Content Fit
+    // GLOBAL Content Fit (Text & Info)
     cardContentScale: 100,
+    cardContentX: 0, // Added X
     cardContentY: 0,
     
     viewMode: '2d',

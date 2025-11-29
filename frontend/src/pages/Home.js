@@ -5,7 +5,7 @@ import Pitch from '../components/Pitch';
 import PlayerForm from '../components/PlayerForm';
 import PlayerCard, { CardVisual } from '../components/PlayerCard';
 import { Button } from "@/components/ui/button";
-import { Settings, Download, Upload, Plus, Share2, Palette, Layout, Activity, Shield, Trophy, Move, Maximize, Crop, Image as ImageIcon, RefreshCcw, Check, Layers, BoxSelect, Save } from 'lucide-react';
+import { Settings, Download, Upload, Plus, Share2, Palette, Layout, Activity, Shield, Trophy, Move, Maximize, Crop, Image as ImageIcon, RefreshCcw, Check, Layers, BoxSelect, Save, Type } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -317,16 +317,16 @@ const Home = () => {
                     <SheetTitle className="text-emerald-400">Estación de Edición</SheetTitle>
                   </SheetHeader>
                   
-                  {/* SIDE-BY-SIDE LAYOUT WITH OPTIMIZED SPACING */}
-                  <div className="flex flex-col lg:flex-row h-full py-4 gap-4">
+                  {/* NEW SIDE-BY-SIDE LAYOUT */}
+                  <div className="flex flex-col lg:flex-row h-full py-6 gap-8">
                     
                     {/* LEFT COLUMN: STICKY PREVIEW */}
                     <div className="flex-1 lg:flex-[0.4] flex flex-col items-center lg:items-end lg:sticky lg:top-0 h-fit">
-                      <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800 shadow-2xl flex flex-col items-center gap-3 w-full">
+                      <div className="bg-slate-950/50 p-6 rounded-xl border border-slate-800 shadow-2xl flex flex-col items-center gap-4 w-full">
                         <div className="w-full flex justify-between items-center">
-                            <Label className="text-xs text-emerald-400 uppercase font-bold tracking-wider">Vista Previa</Label>
+                            <Label className="text-sm text-emerald-400 uppercase font-bold tracking-wider">Vista Previa</Label>
                             <Select value={selectedPreviewPlayerId} onValueChange={setSelectedPreviewPlayerId}>
-                                <SelectTrigger className="w-[160px] h-7 text-xs bg-slate-800 border-slate-700">
+                                <SelectTrigger className="w-[180px] h-8 text-xs bg-slate-800 border-slate-700">
                                     <SelectValue placeholder="Seleccionar Jugador" />
                                 </SelectTrigger>
                                 <SelectContent className="bg-slate-800 border-slate-700 text-white">
@@ -338,23 +338,21 @@ const Home = () => {
                             </Select>
                         </div>
                         
-                        {/* CARD VISUAL WITH CORRECT SCALING PROP */}
-                        <div className="flex justify-center">
+                        <div className="scale-75 origin-top">
                           <CardVisual 
                             player={playerWithAdjustments} 
                             pitchSettings={pitchSettings} 
                             clubInfo={clubInfo} 
-                            scale={0.75} 
                           />
                         </div>
                       </div>
                     </div>
 
                     {/* RIGHT COLUMN: CONTROLS */}
-                    <div className="flex-1 lg:flex-[0.6] space-y-6 pr-2 pb-20">
+                    <div className="flex-1 lg:flex-[0.6] space-y-8 pr-2 pb-20">
                       
                       {/* 1. PLAYER IMAGE EDITOR */}
-                      <div className="space-y-3 border-b border-slate-800 pb-4">
+                      <div className="space-y-4 border-b border-slate-800 pb-6">
                         <div className="flex items-center justify-between">
                           <Label className="text-sm text-emerald-400 uppercase font-bold flex items-center gap-2">
                             <ImageIcon className="w-4 h-4" /> Editor de Foto (Individual)
@@ -369,9 +367,9 @@ const Home = () => {
                           </div>
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           {/* Zoom & Position */}
-                          <div className="space-y-2 bg-slate-950/30 p-3 rounded border border-slate-800">
+                          <div className="space-y-3 bg-slate-950/30 p-3 rounded border border-slate-800">
                             <Label className="text-[10px] text-slate-500 font-bold uppercase">Posición y Zoom</Label>
                             
                             <div className="space-y-1">
@@ -392,7 +390,7 @@ const Home = () => {
                           </div>
 
                           {/* Crop Controls */}
-                          <div className="space-y-2 bg-slate-950/30 p-3 rounded border border-slate-800">
+                          <div className="space-y-3 bg-slate-950/30 p-3 rounded border border-slate-800">
                             <Label className="text-[10px] text-slate-500 font-bold uppercase flex items-center gap-1"><Crop className="w-3 h-3" /> Recortes (Crop)</Label>
                             
                             <div className="space-y-1">
@@ -419,7 +417,31 @@ const Home = () => {
                         </div>
                       </div>
 
-                      {/* 2. GLOBAL SETTINGS */}
+                      {/* 2. TEXT & INFO ADJUSTMENTS (NEW) */}
+                      <div className="space-y-4 border-b border-slate-800 pb-6">
+                        <Label className="text-sm text-emerald-400 uppercase font-bold flex items-center gap-2">
+                          <Type className="w-4 h-4" /> Ajuste de Textos e Información (Global)
+                        </Label>
+                        
+                        <div className="space-y-3 bg-slate-950/30 p-3 rounded border border-slate-800 opacity-90 hover:opacity-100 transition-opacity">
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-[10px]"><span>Escala (Zoom General)</span><span>{pitchSettings.cardContentScale}%</span></div>
+                            <Slider value={[pitchSettings.cardContentScale || 100]} min={80} max={120} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, cardContentScale: v[0]}))} className="[&>.relative>.absolute]:bg-slate-500" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <div className="flex justify-between text-[10px]"><span>Posición X</span><span>{pitchSettings.cardContentX || 0}px</span></div>
+                              <Slider value={[pitchSettings.cardContentX || 0]} min={-50} max={50} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, cardContentX: v[0]}))} className="[&>.relative>.absolute]:bg-slate-500" />
+                            </div>
+                            <div className="space-y-1">
+                              <div className="flex justify-between text-[10px]"><span>Posición Y</span><span>{pitchSettings.cardContentY || 0}px</span></div>
+                              <Slider value={[pitchSettings.cardContentY || 0]} min={-50} max={50} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, cardContentY: v[0]}))} className="[&>.relative>.absolute]:bg-slate-500" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 3. GLOBAL SETTINGS */}
                       <Label className="text-xs text-slate-400 uppercase font-bold tracking-wider border-b border-slate-800 pb-2 mb-2 block">Ajustes Globales</Label>
 
                       {/* Quick Colors */}
