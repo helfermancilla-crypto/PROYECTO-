@@ -215,17 +215,26 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      const canvas = await html2canvas(cardRef.current, {
-        backgroundColor: null,
-        scale: 3,
-        useCORS: true,
-        logging: false,
-        allowTaint: true,
-      });
-      const link = document.createElement('a');
-      link.download = `${player.name}_card.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
+      try {
+        const canvas = await html2canvas(cardRef.current, {
+          backgroundColor: null,
+          scale: 3,
+          useCORS: true, // Enable CORS to load external images
+          logging: true, // Enable logging for debug
+          allowTaint: false, // CRITICAL: Must be false to allow toDataURL
+          foreignObjectRendering: false // Sometimes helps stability
+        });
+        
+        const link = document.createElement('a');
+        link.download = `${player.name}_card.png`;
+        link.href = canvas.toDataURL('image/png');
+        document.body.appendChild(link); // Append to body to ensure click works
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        console.error("Export failed:", error);
+        alert("Error al exportar. Por favor intenta de nuevo. (Detalle: Posible bloqueo de seguridad del navegador)");
+      }
     }
   };
 
