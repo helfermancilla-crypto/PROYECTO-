@@ -5,7 +5,7 @@ import Pitch from '../components/Pitch';
 import PlayerForm from '../components/PlayerForm';
 import PlayerCard, { CardVisual } from '../components/PlayerCard';
 import { Button } from "@/components/ui/button";
-import { Settings, Download, Upload, Plus, Palette, Layout, Shield, Crop, Image as ImageIcon, RefreshCcw, Check } from 'lucide-react';
+import { Settings, Download, Upload, Plus, Palette, Layout, Shield, Crop, Image as ImageIcon, RefreshCcw, Check, Maximize } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
