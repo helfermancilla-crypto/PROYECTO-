@@ -23,34 +23,25 @@ export const TeamProvider = ({ children }) => {
     kitColor: '#ef4444',
     kitNumberColor: '#ffffff',
     
-    // Card Visual Settings
+    // GLOBAL Card Visual Settings
     cardColor: '#1e293b',
     cardColor2: '#0f172a',
     cardGradient: 'diagonal',
     
-    // Texture Settings
+    // GLOBAL Texture Settings
     cardTextureScale: 150,
     cardTextureX: 50,
     cardTextureY: 50,
     cardTextureOpacity: 0.5,
 
-    // Border (Frame) Settings - NEW
+    // GLOBAL Border Settings
     cardBorderScale: 100,
     cardBorderX: 0,
     cardBorderY: 0,
     
-    // Card Fit Adjustments (Global Content)
+    // GLOBAL Content Fit
     cardContentScale: 100,
     cardContentY: 0,
-    
-    // Player Image Specific Adjustments
-    playerImageScale: 100, 
-    playerImageX: 0, 
-    playerImageY: 0, 
-    playerImageCropTop: 0, 
-    playerImageCropBottom: 0, 
-    playerImageCropLeft: 0, 
-    playerImageCropRight: 0, 
     
     viewMode: '2d',
   };
@@ -143,6 +134,16 @@ export const TeamProvider = ({ children }) => {
       ...playerData,
       position: defaultPos,
       votes: [],
+      // Initialize INDIVIDUAL photo settings with defaults
+      photoSettings: {
+        scale: 100,
+        x: 0,
+        y: 0,
+        cropTop: 0,
+        cropBottom: 0,
+        cropLeft: 0,
+        cropRight: 0
+      }
     };
     
     setPlayers(prev => [...prev, newPlayer]);

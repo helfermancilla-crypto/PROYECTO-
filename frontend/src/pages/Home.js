@@ -5,7 +5,7 @@ import Pitch from '../components/Pitch';
 import PlayerForm from '../components/PlayerForm';
 import PlayerCard, { CardVisual } from '../components/PlayerCard';
 import { Button } from "@/components/ui/button";
-import { Settings, Download, Upload, Plus, Share2, Palette, Layout, Activity, Shield, Trophy, Move, Maximize, Crop, Image as ImageIcon, RefreshCcw, Check, Layers, BoxSelect } from 'lucide-react';
+import { Settings, Download, Upload, Plus, Share2, Palette, Layout, Activity, Shield, Trophy, Move, Maximize, Crop, Image as ImageIcon, RefreshCcw, Check, Layers, BoxSelect, Save } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -37,6 +37,31 @@ const Home = () => {
   const [editingPlayer, setEditingPlayer] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [isCardOpen, setIsCardOpen] = useState(false);
+  
+  // State for the Player Selector in Settings
+  const [selectedPreviewPlayerId, setSelectedPreviewPlayerId] = useState('preview');
+  
+  // Temporary state for individual photo adjustments before saving
+  const [photoAdjustments, setPhotoAdjustments] = useState({
+    scale: 100, x: 0, y: 0,
+    cropTop: 0, cropBottom: 0, cropLeft: 0, cropRight: 0
+  });
+
+  // Effect to load player's saved settings when selected
+  React.useEffect(() => {
+    if (selectedPreviewPlayerId === 'preview') {
+      // Reset to default for dummy preview
+      setPhotoAdjustments({ scale: 100, x: 0, y: 0, cropTop: 0, cropBottom: 0, cropLeft: 0, cropRight: 0 });
+    } else {
+      const player = players.find(p => p.id === selectedPreviewPlayerId);
+      if (player && player.photoSettings) {
+        setPhotoAdjustments(player.photoSettings);
+      } else {
+        // Default if no saved settings
+        setPhotoAdjustments({ scale: 100, x: 0, y: 0, cropTop: 0, cropBottom: 0, cropLeft: 0, cropRight: 0 });
+      }
+    }
+  }, [selectedPreviewPlayerId, players]);
 
   const handlePlayerClick = (player) => {
     setSelectedPlayer(player);
@@ -116,17 +141,21 @@ const Home = () => {
   };
 
   const resetPhotoSettings = () => {
-    setPitchSettings(prev => ({
-      ...prev,
-      playerImageScale: 100,
-      playerImageX: 0,
-      playerImageY: 0,
-      playerImageCropTop: 0,
-      playerImageCropBottom: 0,
-      playerImageCropLeft: 0,
-      playerImageCropRight: 0,
-    }));
-    toast.info("Ajustes de foto restablecidos");
+    setPhotoAdjustments({
+      scale: 100, x: 0, y: 0,
+      cropTop: 0, cropBottom: 0, cropLeft: 0, cropRight: 0
+    });
+    toast.info("Ajustes de foto restablecidos (No guardado)");
+  };
+
+  const savePhotoSettings = () => {
+    if (selectedPreviewPlayerId === 'preview') {
+      toast.warning("Selecciona un jugador real para guardar");
+      return;
+    }
+    
+    updatePlayer(selectedPreviewPlayerId, { photoSettings: photoAdjustments });
+    toast.success("¡Ajustes de foto guardados para este jugador!");
   };
 
   // Preset colors
@@ -174,13 +203,25 @@ const Home = () => {
   const teamStats = calculateTeamStats();
 
   // Dummy player for preview
-  const previewPlayer = {
-    name: 'JUGADOR',
+  const dummyPlayer = {
+    id: 'preview',
+    name: 'EJEMPLO',
     role: 'FWD',
     number: '10',
     nation: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png',
     avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=300&auto=format&fit=crop',
     stats: { pac: 90, dri: 88, sho: 85, def: 70, pas: 82, phy: 80, rec: 85 }
+  };
+
+  // Determine which player to show in preview
+  const currentPlayer = selectedPreviewPlayerId === 'preview' 
+    ? dummyPlayer 
+    : players.find(p => p.id === selectedPreviewPlayerId) || dummyPlayer;
+
+  // Merge the photo adjustments into the player object for rendering ONLY
+  const playerWithAdjustments = {
+    ...currentPlayer,
+    photoSettings: photoAdjustments
   };
 
   return (
@@ -273,7 +314,6 @@ const Home = () => {
                   </Button>
                 </SheetTrigger>
                 
-                {/* INCREASED WIDTH TO 1000px FOR SIDE-BY-SIDE LAYOUT */}
                 <SheetContent className="bg-slate-900 border-slate-800 text-white overflow-y-auto w-full sm:max-w-[1000px]">
                   <SheetHeader>
                     <SheetTitle className="text-emerald-400">Estación de Edición</SheetTitle>
@@ -283,26 +323,108 @@ const Home = () => {
                   <div className="flex flex-col lg:flex-row h-full py-6 gap-8">
                     
                     {/* LEFT COLUMN: STICKY PREVIEW */}
-                    <div className="flex-1 lg:flex-[0.4] flex flex-col items-center lg:items-end lg:sticky lg:top-0">
+                    <div className="flex-1 lg:flex-[0.4] flex flex-col items-center lg:items-end lg:sticky lg:top-0 h-fit">
                       <div className="bg-slate-950/50 p-6 rounded-xl border border-slate-800 shadow-2xl flex flex-col items-center gap-4 w-full">
-                        <Label className="text-sm text-emerald-400 uppercase font-bold tracking-wider">Vista Previa</Label>
+                        <div className="w-full flex justify-between items-center">
+                            <Label className="text-sm text-emerald-400 uppercase font-bold tracking-wider">Vista Previa</Label>
+                            <Select value={selectedPreviewPlayerId} onValueChange={setSelectedPreviewPlayerId}>
+                                <SelectTrigger className="w-[180px] h-8 text-xs bg-slate-800 border-slate-700">
+                                    <SelectValue placeholder="Seleccionar Jugador" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                                    <SelectItem value="preview">-- Ejemplo --</SelectItem>
+                                    {players.map(p => (
+                                        <SelectItem key={p.id} value={p.id}>{p.name} (#{p.number})</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        
                         <div className="scale-75 origin-top">
                           <CardVisual 
-                            player={previewPlayer} 
+                            player={playerWithAdjustments} 
                             pitchSettings={pitchSettings} 
                             clubInfo={clubInfo} 
                           />
                         </div>
-                        <div className="h-[350px] lg:hidden"></div> 
                       </div>
                     </div>
 
                     {/* RIGHT COLUMN: CONTROLS */}
                     <div className="flex-1 lg:flex-[0.6] space-y-8 pr-2 pb-20">
                       
-                      {/* 1. Quick Colors */}
+                      {/* 1. PLAYER IMAGE EDITOR (Moved to top for importance) */}
+                      <div className="space-y-4 border-b border-slate-800 pb-6">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-sm text-emerald-400 uppercase font-bold flex items-center gap-2">
+                            <ImageIcon className="w-4 h-4" /> Editor de Foto (Individual)
+                          </Label>
+                          <div className="flex gap-2">
+                            <Button size="xs" variant="ghost" onClick={resetPhotoSettings} className="h-7 text-xs text-slate-400 hover:text-white hover:bg-slate-800">
+                                <RefreshCcw className="w-3 h-3 mr-1" /> Reset
+                            </Button>
+                            <Button size="xs" onClick={savePhotoSettings} className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 text-white">
+                                <Save className="w-3 h-3 mr-1" /> Guardar Foto
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* Zoom & Position */}
+                          <div className="space-y-3 bg-slate-950/30 p-3 rounded border border-slate-800">
+                            <Label className="text-[10px] text-slate-500 font-bold uppercase">Posición y Zoom</Label>
+                            
+                            <div className="space-y-1">
+                              <div className="flex justify-between text-[10px]"><span>Zoom</span><span className="text-emerald-400">{photoAdjustments.scale}%</span></div>
+                              <Slider value={[photoAdjustments.scale]} min={50} max={200} step={1} onValueChange={(v) => setPhotoAdjustments(prev => ({...prev, scale: v[0]}))} className="[&>.relative>.absolute]:bg-blue-500" />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="space-y-1">
+                                <div className="flex justify-between text-[10px]"><span>X</span><span>{photoAdjustments.x}</span></div>
+                                <Slider value={[photoAdjustments.x]} min={-150} max={150} step={1} onValueChange={(v) => setPhotoAdjustments(prev => ({...prev, x: v[0]}))} className="[&>.relative>.absolute]:bg-blue-500" />
+                              </div>
+                              <div className="space-y-1">
+                                <div className="flex justify-between text-[10px]"><span>Y</span><span>{photoAdjustments.y}</span></div>
+                                <Slider value={[photoAdjustments.y]} min={-150} max={150} step={1} onValueChange={(v) => setPhotoAdjustments(prev => ({...prev, y: v[0]}))} className="[&>.relative>.absolute]:bg-blue-500" />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Crop Controls */}
+                          <div className="space-y-3 bg-slate-950/30 p-3 rounded border border-slate-800">
+                            <Label className="text-[10px] text-slate-500 font-bold uppercase flex items-center gap-1"><Crop className="w-3 h-3" /> Recortes (Crop)</Label>
+                            
+                            <div className="space-y-1">
+                              <div className="flex justify-between text-[10px]"><span>Superior (Top)</span><span>{photoAdjustments.cropTop}%</span></div>
+                              <Slider value={[photoAdjustments.cropTop]} min={0} max={50} step={1} onValueChange={(v) => setPhotoAdjustments(prev => ({...prev, cropTop: v[0]}))} className="[&>.relative>.absolute]:bg-red-500" />
+                            </div>
+
+                            <div className="space-y-1">
+                              <div className="flex justify-between text-[10px]"><span>Inferior (Bottom)</span><span>{photoAdjustments.cropBottom}%</span></div>
+                              <Slider value={[photoAdjustments.cropBottom]} min={0} max={50} step={1} onValueChange={(v) => setPhotoAdjustments(prev => ({...prev, cropBottom: v[0]}))} className="[&>.relative>.absolute]:bg-red-500" />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="space-y-1">
+                                <div className="flex justify-between text-[10px]"><span>Izq (L)</span><span>{photoAdjustments.cropLeft}%</span></div>
+                                <Slider value={[photoAdjustments.cropLeft]} min={0} max={50} step={1} onValueChange={(v) => setPhotoAdjustments(prev => ({...prev, cropLeft: v[0]}))} className="[&>.relative>.absolute]:bg-red-500" />
+                              </div>
+                              <div className="space-y-1">
+                                <div className="flex justify-between text-[10px]"><span>Der (R)</span><span>{photoAdjustments.cropRight}%</span></div>
+                                <Slider value={[photoAdjustments.cropRight]} min={0} max={50} step={1} onValueChange={(v) => setPhotoAdjustments(prev => ({...prev, cropRight: v[0]}))} className="[&>.relative>.absolute]:bg-red-500" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 2. GLOBAL SETTINGS (Below Photo Editor) */}
+                      <Label className="text-xs text-slate-400 uppercase font-bold tracking-wider border-b border-slate-800 pb-2 mb-4 block">Ajustes Globales (Todo el Equipo)</Label>
+
+                      {/* Quick Colors */}
                       <div className="space-y-3">
-                        <Label className="text-xs text-slate-400 uppercase font-bold tracking-wider">Estilos Rápidos</Label>
+                        <Label className="text-xs text-slate-500 uppercase font-bold tracking-wider">Estilos Rápidos</Label>
                         <div className="flex gap-2 flex-wrap">
                           {colorPresets.map(p => (
                             <button 
@@ -317,7 +439,7 @@ const Home = () => {
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* 2. Colors & Gradient */}
+                        {/* Colors & Gradient */}
                         <div className="space-y-4">
                           <Label className="text-xs text-slate-400 uppercase font-bold flex gap-2"><Palette className="w-3 h-3" /> Colores</Label>
                           <div className="grid grid-cols-2 gap-2">
@@ -347,7 +469,7 @@ const Home = () => {
                           </Select>
                         </div>
 
-                        {/* 3. Texture Controls (NEW) */}
+                        {/* Texture Controls */}
                         <div className="space-y-4">
                           <Label className="text-xs text-slate-400 uppercase font-bold flex gap-2"><Layers className="w-3 h-3" /> Textura (Fondo)</Label>
                           <div className="space-y-3">
@@ -373,7 +495,7 @@ const Home = () => {
                         </div>
                       </div>
 
-                      {/* 4. Border Controls (NEW) */}
+                      {/* Border Controls */}
                       <div className="space-y-4 border-t border-slate-800 pt-4">
                         <Label className="text-xs text-slate-400 uppercase font-bold flex gap-2"><BoxSelect className="w-3 h-3" /> Ajuste de Marco (Borde)</Label>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -392,68 +514,7 @@ const Home = () => {
                         </div>
                       </div>
 
-                      {/* 5. PLAYER IMAGE EDITOR */}
-                      <div className="space-y-4 border-t border-slate-800 pt-4">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-xs text-emerald-400 uppercase font-bold flex items-center gap-2">
-                            <ImageIcon className="w-3 h-3" /> Editor de Foto
-                          </Label>
-                          <Button size="xs" variant="ghost" onClick={resetPhotoSettings} className="h-6 text-[10px] text-slate-400 hover:text-white hover:bg-slate-800">
-                            <RefreshCcw className="w-3 h-3 mr-1" /> Resetear
-                          </Button>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          {/* Zoom & Position */}
-                          <div className="space-y-3 bg-slate-950/30 p-3 rounded border border-slate-800">
-                            <Label className="text-[10px] text-slate-500 font-bold uppercase">Transformación</Label>
-                            
-                            <div className="space-y-1">
-                              <div className="flex justify-between text-[10px]"><span>Zoom</span><input type="number" value={pitchSettings.playerImageScale} onChange={(e) => setPitchSettings(prev => ({...prev, playerImageScale: parseInt(e.target.value)}))} className="w-10 bg-transparent text-right outline-none" />%</div>
-                              <Slider value={[pitchSettings.playerImageScale || 100]} min={50} max={150} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, playerImageScale: v[0]}))} className="[&>.relative>.absolute]:bg-blue-500" />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                              <div className="space-y-1">
-                                <div className="flex justify-between text-[10px]"><span>X</span><span>{pitchSettings.playerImageX}</span></div>
-                                <Slider value={[pitchSettings.playerImageX || 0]} min={-100} max={100} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, playerImageX: v[0]}))} className="[&>.relative>.absolute]:bg-blue-500" />
-                              </div>
-                              <div className="space-y-1">
-                                <div className="flex justify-between text-[10px]"><span>Y</span><span>{pitchSettings.playerImageY}</span></div>
-                                <Slider value={[pitchSettings.playerImageY || 0]} min={-100} max={100} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, playerImageY: v[0]}))} className="[&>.relative>.absolute]:bg-blue-500" />
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Crop Controls */}
-                          <div className="space-y-3 bg-slate-950/30 p-3 rounded border border-slate-800">
-                            <Label className="text-[10px] text-slate-500 font-bold uppercase flex items-center gap-1"><Crop className="w-3 h-3" /> Recortes (Crop)</Label>
-                            
-                            <div className="space-y-1">
-                              <div className="flex justify-between text-[10px]"><span>Superior (Top)</span><span>{pitchSettings.playerImageCropTop}%</span></div>
-                              <Slider value={[pitchSettings.playerImageCropTop || 0]} min={0} max={50} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, playerImageCropTop: v[0]}))} className="[&>.relative>.absolute]:bg-red-500" />
-                            </div>
-
-                            <div className="space-y-1">
-                              <div className="flex justify-between text-[10px]"><span>Inferior (Bottom)</span><span>{pitchSettings.playerImageCropBottom}%</span></div>
-                              <Slider value={[pitchSettings.playerImageCropBottom || 0]} min={0} max={50} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, playerImageCropBottom: v[0]}))} className="[&>.relative>.absolute]:bg-red-500" />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                              <div className="space-y-1">
-                                <div className="flex justify-between text-[10px]"><span>Izq (L)</span><span>{pitchSettings.playerImageCropLeft}%</span></div>
-                                <Slider value={[pitchSettings.playerImageCropLeft || 0]} min={0} max={50} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, playerImageCropLeft: v[0]}))} className="[&>.relative>.absolute]:bg-red-500" />
-                              </div>
-                              <div className="space-y-1">
-                                <div className="flex justify-between text-[10px]"><span>Der (R)</span><span>{pitchSettings.playerImageCropRight}%</span></div>
-                                <Slider value={[pitchSettings.playerImageCropRight || 0]} min={0} max={50} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, playerImageCropRight: v[0]}))} className="[&>.relative>.absolute]:bg-red-500" />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Global Card Fit (Reduced visual prominence) */}
+                      {/* Global Card Fit */}
                       <div className="space-y-4 border-t border-slate-800 pt-4 opacity-75 hover:opacity-100 transition-opacity">
                           <Label className="text-xs text-slate-500 uppercase font-bold flex gap-2"><Maximize className="w-3 h-3" /> Ajuste Contenido (Global)</Label>
                           <div className="grid grid-cols-2 gap-4">
@@ -466,32 +527,6 @@ const Home = () => {
                               <Slider value={[pitchSettings.cardContentY || 0]} min={-50} max={50} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, cardContentY: v[0]}))} className="[&>.relative>.absolute]:bg-slate-600" />
                             </div>
                           </div>
-                      </div>
-
-                      {/* Other Settings (Pitch/Kit) */}
-                      <div className="space-y-4 border-t border-slate-800 pt-4">
-                        <Label className="text-xs text-slate-400 uppercase font-bold">Otros Ajustes</Label>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label className="text-[10px]">Color Borde Ficha</Label>
-                            <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 rounded border border-slate-600" style={{backgroundColor: pitchSettings.kitColor}}></div>
-                              <Input type="color" value={pitchSettings.kitColor} onChange={(e) => setPitchSettings(prev => ({...prev, kitColor: e.target.value}))} className="h-8 p-1 bg-slate-800 border-slate-700" />
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <Label className="text-[10px]">Color Campo</Label>
-                            <Select value={pitchSettings.color} onValueChange={(v) => setPitchSettings(prev => ({...prev, color: v}))}>
-                              <SelectTrigger className="bg-slate-800 border-slate-700 h-8 text-xs"><SelectValue /></SelectTrigger>
-                              <SelectContent className="bg-slate-800 border-slate-700 text-white">
-                                <SelectItem value="green">Verde</SelectItem>
-                                <SelectItem value="red">Rojo</SelectItem>
-                                <SelectItem value="blue">Azul</SelectItem>
-                                <SelectItem value="black">Negro</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
                       </div>
 
                       <div className="pt-4 border-t border-slate-800">

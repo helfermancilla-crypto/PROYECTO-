@@ -9,8 +9,8 @@ import { useTeam } from '../context/TeamContext';
 // --- 1. Reusable Visual Component (The Card Itself) ---
 export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1 }) => {
   // Calculate Overall Rating
-  const statsArr = Object.values(player.stats);
-  const overall = Math.round(statsArr.reduce((a, b) => a + b, 0) / statsArr.length);
+  const statsArr = Object.values(player.stats || {});
+  const overall = statsArr.length ? Math.round(statsArr.reduce((a, b) => a + b, 0) / statsArr.length) : 0;
   const voteCount = player.votes ? player.votes.length : 0;
   
   // Colors & Gradient Logic
@@ -29,7 +29,7 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
   const texY = pitchSettings.cardTextureY || 50;
   const texOpacity = pitchSettings.cardTextureOpacity ?? 0.5;
 
-  // Border Settings (NEW)
+  // Border Settings
   const borderScale = pitchSettings.cardBorderScale || 100;
   const borderX = pitchSettings.cardBorderX || 0;
   const borderY = pitchSettings.cardBorderY || 0;
@@ -38,29 +38,32 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
   const contentScale = (pitchSettings.cardContentScale || 100) / 100;
   const translateY = pitchSettings.cardContentY || 0;
 
-  // Player Image Specific Adjustments
-  const imgScale = (pitchSettings.playerImageScale || 100) / 100;
-  const imgX = pitchSettings.playerImageX || 0;
-  const imgY = pitchSettings.playerImageY || 0;
+  // Player Image Specific Adjustments (Individual vs Global)
+  // If player has photoSettings, use them. Otherwise default to 0/100 (neutral)
+  const pSet = player.photoSettings || {};
+  const imgScale = (pSet.scale || 100) / 100;
+  const imgX = pSet.x || 0;
+  const imgY = pSet.y || 0;
   
   // Crops
-  const cropTop = pitchSettings.playerImageCropTop || 0;
-  const cropRight = pitchSettings.playerImageCropRight || 0;
-  const cropBottom = pitchSettings.playerImageCropBottom || 0;
-  const cropLeft = pitchSettings.playerImageCropLeft || 0;
+  const cropTop = pSet.cropTop || 0;
+  const cropRight = pSet.cropRight || 0;
+  const cropBottom = pSet.cropBottom || 0;
+  const cropLeft = pSet.cropLeft || 0;
   
   const TEXTURE_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/xmbei8xh_textura%20de%20tela.png";
   const BORDER_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/g95tghim_borde%20dorado.png";
 
   // 7 Stats Mapping
+  const stats = player.stats || {};
   const displayStats = [
-    { label: 'RIT', val: player.stats.speed || player.stats.pac || 0 },
-    { label: 'REG', val: player.stats.dribbling || player.stats.dri || 0 },
-    { label: 'REC', val: player.stats.reception || 0 },
-    { label: 'PAS', val: player.stats.passing || player.stats.pas || 0 },
-    { label: 'TIR', val: player.stats.shooting || player.stats.sho || 0 },
-    { label: 'FIS', val: player.stats.stamina || player.stats.phy || 0 },
-    { label: 'DEF', val: player.stats.heading || player.stats.def || 0 },
+    { label: 'RIT', val: stats.speed || stats.pac || 0 },
+    { label: 'REG', val: stats.dribbling || stats.dri || 0 },
+    { label: 'REC', val: stats.reception || 0 },
+    { label: 'PAS', val: stats.passing || stats.pas || 0 },
+    { label: 'TIR', val: stats.shooting || stats.sho || 0 },
+    { label: 'FIS', val: stats.stamina || stats.phy || 0 },
+    { label: 'DEF', val: stats.heading || stats.def || 0 },
   ];
 
   return (
@@ -125,7 +128,7 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
             </div>
           </div>
 
-          {/* Player Image */}
+          {/* Player Image - With INDIVIDUAL Adjustments */}
           <div className="absolute top-4 right-[-20px] w-[200px] h-[240px] z-20 flex items-end justify-center">
             {player.avatar ? (
               <img 
