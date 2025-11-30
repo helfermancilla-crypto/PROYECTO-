@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -267,9 +267,8 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
               {/* 3 COLUMNS X 3 ROWS GRID */}
               <div className="grid grid-cols-3 gap-4">
                 
-                {/* Col 1: General */}
+                {/* Col 1: General - NO LABELS */}
                 <div className="space-y-4">
-                  <Label className="text-xs font-bold text-emerald-400 uppercase text-center block border-b border-slate-700 pb-1">General</Label>
                   {['rit', 'pas', 'res'].map(key => (
                     <div key={key} className="space-y-1">
                       <div className="flex justify-between items-center">
@@ -281,9 +280,8 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
                   ))}
                 </div>
 
-                {/* Col 2: Technical */}
+                {/* Col 2: Technical - NO LABELS */}
                 <div className="space-y-4">
-                  <Label className="text-xs font-bold text-yellow-400 uppercase text-center block border-b border-slate-700 pb-1">Técnica</Label>
                   {['tir', 'reg', 'con'].map(key => (
                     <div key={key} className="space-y-1">
                       <div className="flex justify-between items-center">
@@ -295,9 +293,8 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
                   ))}
                 </div>
 
-                {/* Col 3: Defense */}
+                {/* Col 3: Defense - NO LABELS */}
                 <div className="space-y-4">
-                  <Label className="text-xs font-bold text-blue-400 uppercase text-center block border-b border-slate-700 pb-1">Defensa</Label>
                   {['def', 'fis', 'cab'].map(key => (
                     <div key={key} className="space-y-1">
                       <div className="flex justify-between items-center">
