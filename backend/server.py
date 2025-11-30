@@ -140,17 +140,23 @@ async def vote_player(player_id: str, vote_stats: Stats):
     vote_dict = vote_stats.model_dump(by_alias=True)
     votes.append(vote_dict)
     
-    # Recalculate averages using the correct stat names
+    # Get original stats (the ones set when creating the player)
+    original_stats = current_player.get("originalStats", current_player.get("stats", {}))
+    
+    # Save originalStats if this is the first vote
+    if "originalStats" not in current_player:
+        current_player["originalStats"] = original_stats.copy()
+    
+    # Recalculate averages: ORIGINAL STATS + ALL VOTES
     stat_keys = ['rit', 'tir', 'pas', 'reg', 'def', 'fis', 'con', 'res', 'cab']
     new_stats = {}
-    if votes:
-        for key in stat_keys:
-            total = sum(v.get(key, 0) for v in votes)
-            new_stats[key] = round(total / len(votes))
-    else:
-        # Default stats if no votes
-        for key in stat_keys:
-            new_stats[key] = 70
+    
+    for key in stat_keys:
+        # Sum: original value + all votes for this stat
+        total = original_stats.get(key, 70)  # Start with original
+        total += sum(v.get(key, 0) for v in votes)  # Add all votes
+        # Average: (original + votes) / (1 + number of votes)
+        new_stats[key] = round(total / (1 + len(votes)))
             
     # Update in DB
     current_player["votes"] = votes
