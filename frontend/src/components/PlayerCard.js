@@ -241,9 +241,6 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
         console.error("Export failed:", error);
         alert("Error al exportar. Por favor intenta de nuevo. (Detalle: " + error.message + ")");
       }
-        console.error("Export failed:", error);
-        alert("Error al exportar. Por favor intenta de nuevo. (Detalle: Posible bloqueo de seguridad del navegador)");
-      }
     }
   };
 
