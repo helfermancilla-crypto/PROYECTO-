@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,7 @@ const COMMON_NATIONS = [
 ];
 
 const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => {
+  // Updated to 9 Stats
   const [formData, setFormData] = React.useState({
     name: '',
     nickname: '',
@@ -41,7 +42,15 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
     nation: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png',
     avatar: '',
     stats: {
-      pac: 70, sho: 70, pas: 70, dri: 70, def: 70, phy: 70
+      rit: 70, // Ritmo
+      pas: 70, // Pase
+      res: 70, // Resistencia
+      tir: 70, // Tiro
+      reg: 70, // Regate
+      con: 70, // Control
+      def: 70, // Defensa
+      fis: 70, // Físico
+      cab: 70  // Cabezazo
     }
   });
 
@@ -50,20 +59,23 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
 
   React.useEffect(() => {
     if (initialData) {
-      const stats = initialData.stats || {};
+      // Map old stats to new 9-stat system if necessary, or use existing
+      const s = initialData.stats || {};
       setFormData({
         ...initialData,
         stats: {
-          pac: stats.pac || stats.speed || 70,
-          sho: stats.sho || stats.shooting || 70,
-          pas: stats.pas || stats.passing || 70,
-          dri: stats.dri || stats.dribbling || 70,
-          def: stats.def || stats.heading || 70,
-          phy: stats.phy || stats.stamina || 70
+          rit: s.rit || s.pac || s.speed || 70,
+          pas: s.pas || s.passing || 70,
+          res: s.res || s.stamina || 70,
+          tir: s.tir || s.sho || s.shooting || 70,
+          reg: s.reg || s.dri || s.dribbling || 70,
+          con: s.con || s.rec || s.reception || 70,
+          def: s.def || 70,
+          fis: s.fis || s.phy || 70,
+          cab: s.cab || s.heading || 70
         }
       });
       
-      // Try to find if the nation matches a preset
       const foundNation = COMMON_NATIONS.find(n => n.flag === initialData.nation);
       if (foundNation) {
         setNationSelection(foundNation.name);
@@ -71,7 +83,6 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
         setNationSelection('Personalizado');
       }
     } else {
-      // Default new player
       setFormData({
         name: '',
         nickname: '',
@@ -79,7 +90,11 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
         role: 'MID',
         nation: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png',
         avatar: '',
-        stats: { pac: 70, sho: 70, pas: 70, dri: 70, def: 70, phy: 70 }
+        stats: {
+          rit: 70, pas: 70, res: 70,
+          tir: 70, reg: 70, con: 70,
+          def: 70, fis: 70, cab: 70
+        }
       });
       setNationSelection('España');
     }
@@ -117,9 +132,6 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
     const selected = COMMON_NATIONS.find(n => n.name === value);
     if (selected && selected.name !== 'Personalizado') {
       handleChange('nation', selected.flag);
-    } else {
-      // Keep existing if switching to custom, or clear it? Let's keep it to be safe
-      // User will upload new one
     }
   };
 
@@ -141,17 +153,20 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
   };
 
   const statLabels = {
-    pac: 'Ritmo (PAC)',
-    sho: 'Tiro (TIR)',
+    rit: 'Ritmo (RIT)',
     pas: 'Pase (PAS)',
-    dri: 'Regate (REG)',
+    res: 'Resistencia (RES)',
+    tir: 'Tiro (TIR)',
+    reg: 'Regate (REG)',
+    con: 'Control (CON)',
     def: 'Defensa (DEF)',
-    phy: 'Físico (FIS)'
+    fis: 'Físico (FIS)',
+    cab: 'Cabezazo (CAB)'
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto bg-slate-900 text-white border-slate-700">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto bg-slate-900 text-white border-slate-700">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold uppercase tracking-wider text-emerald-400">
             {initialData ? 'Editar Jugador' : 'Nuevo Jugador'}
@@ -162,46 +177,30 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
           <Tabs defaultValue="details" className="w-full">
             <TabsList className="grid w-full grid-cols-2 bg-slate-800">
               <TabsTrigger value="details">Detalles</TabsTrigger>
-              <TabsTrigger value="stats">Estadísticas</TabsTrigger>
+              <TabsTrigger value="stats">Estadísticas (9)</TabsTrigger>
             </TabsList>
             
             <TabsContent value="details" className="space-y-4 mt-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Nombre</Label>
-                  <Input 
-                    required 
-                    value={formData.name} 
-                    onChange={e => handleChange('name', e.target.value)} 
-                    className="bg-slate-800 border-slate-700"
-                  />
+                  <Input required value={formData.name} onChange={e => handleChange('name', e.target.value)} className="bg-slate-800 border-slate-700"/>
                 </div>
                 <div className="space-y-2">
                   <Label>Apodo (Opcional)</Label>
-                  <Input 
-                    value={formData.nickname} 
-                    onChange={e => handleChange('nickname', e.target.value)} 
-                    className="bg-slate-800 border-slate-700"
-                  />
+                  <Input value={formData.nickname} onChange={e => handleChange('nickname', e.target.value)} className="bg-slate-800 border-slate-700"/>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Número</Label>
-                  <Input 
-                    type="number" 
-                    value={formData.number} 
-                    onChange={e => handleChange('number', e.target.value)} 
-                    className="bg-slate-800 border-slate-700"
-                  />
+                  <Input type="number" value={formData.number} onChange={e => handleChange('number', e.target.value)} className="bg-slate-800 border-slate-700"/>
                 </div>
                 <div className="space-y-2">
                   <Label>Posición</Label>
                   <Select value={formData.role} onValueChange={val => handleChange('role', val)}>
-                    <SelectTrigger className="bg-slate-800 border-slate-700">
-                      <SelectValue />
-                    </SelectTrigger>
+                    <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
                     <SelectContent className="bg-slate-800 border-slate-700 text-white">
                       <SelectItem value="GK">Portero</SelectItem>
                       <SelectItem value="DEF">Defensa</SelectItem>
@@ -212,15 +211,12 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
                 </div>
               </div>
 
-              {/* NATION SELECTOR */}
               <div className="space-y-2">
                 <Label>Nacionalidad</Label>
                 <div className="flex gap-2 items-center">
                    <div className="flex-1">
                      <Select value={nationSelection} onValueChange={handleNationChange}>
-                        <SelectTrigger className="bg-slate-800 border-slate-700">
-                          <SelectValue />
-                        </SelectTrigger>
+                        <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
                         <SelectContent className="bg-slate-800 border-slate-700 text-white max-h-[200px]">
                           {COMMON_NATIONS.map(nation => (
                             <SelectItem key={nation.name} value={nation.name}>
@@ -233,18 +229,10 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
                         </SelectContent>
                      </Select>
                    </div>
-                   
-                   {/* Preview Flag */}
                    <div className="w-10 h-8 bg-slate-800 border border-slate-700 rounded flex items-center justify-center overflow-hidden">
-                      {formData.nation ? (
-                        <img src={formData.nation} alt="Flag" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-xs text-slate-500">?</span>
-                      )}
+                      {formData.nation ? (<img src={formData.nation} alt="Flag" className="w-full h-full object-cover" />) : (<span className="text-xs text-slate-500">?</span>)}
                    </div>
                 </div>
-
-                {/* Custom Upload Option */}
                 {nationSelection === 'Personalizado' && (
                   <div className="mt-2">
                     <Label className="text-xs text-slate-400 mb-1 block">Subir Bandera Personalizada</Label>
@@ -252,13 +240,7 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
                       <Button type="button" variant="outline" className="w-full border-dashed border-slate-600 text-slate-400 hover:text-white hover:bg-slate-800" onClick={() => fileInputRef.current?.click()}>
                         <Upload className="w-4 h-4 mr-2" /> Seleccionar Imagen
                       </Button>
-                      <input 
-                        type="file" 
-                        ref={fileInputRef}
-                        className="hidden" 
-                        accept="image/*"
-                        onChange={handleNationUpload}
-                      />
+                      <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleNationUpload} />
                     </div>
                   </div>
                 )}
@@ -270,12 +252,7 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
                   <Button type="button" variant="outline" className="w-full justify-start bg-slate-800 border-slate-700 text-slate-300 hover:text-white hover:bg-slate-700 relative">
                     <ImageIcon className="w-4 h-4 mr-2" /> 
                     {formData.avatar ? 'Cambiar Foto' : 'Subir Foto'}
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={handleImageUpload} 
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                    />
+                    <input type="file" accept="image/*" onChange={handleImageUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
                   </Button>
                 </div>
                 {formData.avatar && (
@@ -287,56 +264,62 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
             </TabsContent>
 
             <TabsContent value="stats" className="space-y-6 mt-4 px-1">
-              {Object.entries(formData.stats).map(([key, val]) => (
-                <div key={key} className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <Label className="text-xs uppercase font-bold text-slate-400 w-24">
-                      {statLabels[key] || key}
-                    </Label>
-                    
-                    <input
-                      type="number"
-                      value={val}
-                      onChange={(e) => handleStatChange(key, e.target.value)}
-                      className="w-20 h-8 text-right bg-slate-950 border border-slate-700 rounded-md text-emerald-400 px-2 font-mono font-bold focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
-                      min="0"
-                      max="99"
-                    />
-                  </div>
-                  
-                  <Slider 
-                    value={[val]} 
-                    max={99} 
-                    min={0} 
-                    step={1} 
-                    onValueChange={v => handleStatChange(key, v[0])}
-                    className="[&>.relative>.absolute]:bg-emerald-500 py-2 cursor-pointer"
-                  />
+              {/* 3 COLUMNS X 3 ROWS GRID */}
+              <div className="grid grid-cols-3 gap-4">
+                
+                {/* Col 1: General */}
+                <div className="space-y-4">
+                  <Label className="text-xs font-bold text-emerald-400 uppercase text-center block border-b border-slate-700 pb-1">General</Label>
+                  {['rit', 'pas', 'res'].map(key => (
+                    <div key={key} className="space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] uppercase font-bold text-slate-400">{statLabels[key].split('(')[0]}</span>
+                        <input type="number" value={formData.stats[key]} onChange={(e) => handleStatChange(key, e.target.value)} className="w-10 h-6 text-center bg-slate-950 border border-slate-700 rounded text-emerald-400 text-xs" min="0" max="99" />
+                      </div>
+                      <Slider value={[formData.stats[key]]} max={99} min={0} step={1} onValueChange={v => handleStatChange(key, v[0])} className="[&>.relative>.absolute]:bg-emerald-500" />
+                    </div>
+                  ))}
                 </div>
-              ))}
+
+                {/* Col 2: Technical */}
+                <div className="space-y-4">
+                  <Label className="text-xs font-bold text-yellow-400 uppercase text-center block border-b border-slate-700 pb-1">Técnica</Label>
+                  {['tir', 'reg', 'con'].map(key => (
+                    <div key={key} className="space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] uppercase font-bold text-slate-400">{statLabels[key].split('(')[0]}</span>
+                        <input type="number" value={formData.stats[key]} onChange={(e) => handleStatChange(key, e.target.value)} className="w-10 h-6 text-center bg-slate-950 border border-slate-700 rounded text-yellow-400 text-xs" min="0" max="99" />
+                      </div>
+                      <Slider value={[formData.stats[key]]} max={99} min={0} step={1} onValueChange={v => handleStatChange(key, v[0])} className="[&>.relative>.absolute]:bg-yellow-500" />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Col 3: Defense */}
+                <div className="space-y-4">
+                  <Label className="text-xs font-bold text-blue-400 uppercase text-center block border-b border-slate-700 pb-1">Defensa</Label>
+                  {['def', 'fis', 'cab'].map(key => (
+                    <div key={key} className="space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] uppercase font-bold text-slate-400">{statLabels[key].split('(')[0]}</span>
+                        <input type="number" value={formData.stats[key]} onChange={(e) => handleStatChange(key, e.target.value)} className="w-10 h-6 text-center bg-slate-950 border border-slate-700 rounded text-blue-400 text-xs" min="0" max="99" />
+                      </div>
+                      <Slider value={[formData.stats[key]]} max={99} min={0} step={1} onValueChange={v => handleStatChange(key, v[0])} className="[&>.relative>.absolute]:bg-blue-500" />
+                    </div>
+                  ))}
+                </div>
+
+              </div>
             </TabsContent>
           </Tabs>
 
           <DialogFooter className="flex justify-between sm:justify-between gap-2 pt-4 border-t border-slate-800">
             {initialData && (
-              <Button 
-                type="button" 
-                variant="destructive" 
-                onClick={() => {
-                  onDelete(initialData.id);
-                  onOpenChange(false);
-                }}
-              >
-                Eliminar
-              </Button>
+              <Button type="button" variant="destructive" onClick={() => { onDelete(initialData.id); onOpenChange(false); }}>Eliminar</Button>
             )}
             <div className="flex gap-2 ml-auto">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="border-slate-600 text-slate-300 hover:bg-slate-800">
-                Cancelar
-              </Button>
-              <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
-                Guardar Jugador
-              </Button>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="border-slate-600 text-slate-300 hover:bg-slate-800">Cancelar</Button>
+              <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold">Guardar Jugador</Button>
             </div>
           </DialogFooter>
         </form>

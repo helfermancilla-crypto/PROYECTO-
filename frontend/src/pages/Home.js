@@ -38,16 +38,13 @@ const Home = () => {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [isCardOpen, setIsCardOpen] = useState(false);
   
-  // State for the Player Selector in Settings
   const [selectedPreviewPlayerId, setSelectedPreviewPlayerId] = useState('preview');
   
-  // Temporary state for individual photo adjustments before saving
   const [photoAdjustments, setPhotoAdjustments] = useState({
     scale: 100, x: 0, y: 0,
     cropTop: 0, cropBottom: 0, cropLeft: 0, cropRight: 0
   });
 
-  // Effect to load player's saved settings when selected
   React.useEffect(() => {
     if (selectedPreviewPlayerId === 'preview') {
       setPhotoAdjustments({ scale: 100, x: 0, y: 0, cropTop: 0, cropBottom: 0, cropLeft: 0, cropRight: 0 });
@@ -208,7 +205,11 @@ const Home = () => {
     number: '10',
     nation: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png',
     avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=300&auto=format&fit=crop',
-    stats: { pac: 90, dri: 88, sho: 85, def: 70, pas: 82, phy: 80, rec: 85 }
+    stats: { 
+      rit: 90, pas: 82, res: 80,
+      tir: 85, reg: 88, con: 85,
+      def: 70, fis: 80, cab: 75
+    }
   };
 
   // Determine which player to show in preview
