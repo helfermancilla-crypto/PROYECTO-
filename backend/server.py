@@ -27,13 +27,17 @@ api_router = APIRouter(prefix="/api")
 # --- Models ---
 
 class Stats(BaseModel):
-    speed: int = 70
-    dribbling: int = 70
-    reception: int = 70
-    passing: int = 70
-    shooting: int = 70
-    stamina: int = 70
-    heading: int = 70
+    rit: int = 70
+    tir: int = 70
+    pas: int = 70
+    reg: int = 70
+    def_: int = Field(default=70, alias='def')
+    fis: int = 70
+    con: int = 70
+    res: int = 70
+    cab: int = 70
+    
+    model_config = ConfigDict(populate_by_name=True)
 
 class Position(BaseModel):
     x: float
