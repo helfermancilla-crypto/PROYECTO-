@@ -336,8 +336,10 @@ metadata:
   test_sequence: 1
 
 test_plan:
-  current_focus: []
-  stuck_tasks: []
+  current_focus: 
+    - "Stats Input Fix"
+  stuck_tasks: 
+    - "Stats Input Fix"
   test_all: false
   test_priority: "critical_first"
 
