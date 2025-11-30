@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,7 +33,6 @@ const COMMON_NATIONS = [
 ];
 
 const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => {
-  // Updated to 9 Stats
   const [formData, setFormData] = React.useState({
     name: '',
     nickname: '',
@@ -42,15 +41,9 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
     nation: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/2560px-Flag_of_Spain.svg.png',
     avatar: '',
     stats: {
-      rit: 70, // Ritmo
-      pas: 70, // Pase
-      res: 70, // Resistencia
-      tir: 70, // Tiro
-      reg: 70, // Regate
-      con: 70, // Control
-      def: 70, // Defensa
-      fis: 70, // Físico
-      cab: 70  // Cabezazo
+      rit: 70, pas: 70, res: 70,
+      tir: 70, reg: 70, con: 70,
+      def: 70, fis: 70, cab: 70
     }
   });
 
@@ -59,17 +52,16 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
 
   React.useEffect(() => {
     if (initialData) {
-      // Map old stats to new 9-stat system if necessary, or use existing
       const s = initialData.stats || {};
       setFormData({
         ...initialData,
         stats: {
-          rit: s.rit || s.pac || s.speed || 70,
+          rit: s.rit || s.pac || 70,
           pas: s.pas || s.passing || 70,
           res: s.res || s.stamina || 70,
-          tir: s.tir || s.sho || s.shooting || 70,
-          reg: s.reg || s.dri || s.dribbling || 70,
-          con: s.con || s.rec || s.reception || 70,
+          tir: s.tir || s.sho || 70,
+          reg: s.reg || s.dri || 70,
+          con: s.con || s.reception || 70,
           def: s.def || 70,
           fis: s.fis || s.phy || 70,
           cab: s.cab || s.heading || 70
@@ -264,11 +256,12 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
             </TabsContent>
 
             <TabsContent value="stats" className="space-y-6 mt-4 px-1">
-              {/* 3 COLUMNS X 3 ROWS GRID */}
+              {/* 3 COLUMNS X 3 ROWS GRID - WITHOUT LABELS AS REQUESTED */}
               <div className="grid grid-cols-3 gap-4">
                 
-                {/* Col 1: General - NO LABELS */}
+                {/* Col 1: General */}
                 <div className="space-y-4">
+                  {/* REMOVED LABEL: GENERAL */}
                   {['rit', 'pas', 'res'].map(key => (
                     <div key={key} className="space-y-1">
                       <div className="flex justify-between items-center">
@@ -280,8 +273,9 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
                   ))}
                 </div>
 
-                {/* Col 2: Technical - NO LABELS */}
+                {/* Col 2: Technical */}
                 <div className="space-y-4">
+                  {/* REMOVED LABEL: TÉCNICA */}
                   {['tir', 'reg', 'con'].map(key => (
                     <div key={key} className="space-y-1">
                       <div className="flex justify-between items-center">
@@ -293,8 +287,9 @@ const PlayerForm = ({ open, onOpenChange, onSubmit, initialData, onDelete }) => 
                   ))}
                 </div>
 
-                {/* Col 3: Defense - NO LABELS */}
+                {/* Col 3: Defense */}
                 <div className="space-y-4">
+                  {/* REMOVED LABEL: DEFENSA */}
                   {['def', 'fis', 'cab'].map(key => (
                     <div key={key} className="space-y-1">
                       <div className="flex justify-between items-center">
