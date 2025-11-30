@@ -145,10 +145,13 @@ async def vote_player(player_id: str, vote_stats: Stats):
     votes.append(vote_dict)
     
     # Get original stats (the ones set when creating the player)
-    original_stats = current_player.get("originalStats", current_player.get("stats", {}))
-    
-    # Save originalStats if this is the first vote
-    if "originalStats" not in current_player:
+    original_stats = current_player.get("originalStats")
+    if original_stats is None:
+        # If no originalStats, use current stats
+        original_stats = current_player.get("stats", {})
+        if not original_stats:
+            # If stats is also None/empty, use defaults
+            original_stats = {k: 70 for k in ['rit', 'tir', 'pas', 'reg', 'def', 'fis', 'con', 'res', 'cab']}
         current_player["originalStats"] = original_stats.copy()
     
     # Recalculate averages: ORIGINAL STATS + ALL VOTES
