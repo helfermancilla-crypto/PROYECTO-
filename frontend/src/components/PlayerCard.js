@@ -6,8 +6,29 @@ import html2canvas from 'html2canvas';
 import { cn } from '@/lib/utils';
 import { useTeam } from '../context/TeamContext';
 
+// --- Helper to convert image URL to Data URL (Base64) to bypass CORS issues in html2canvas ---
+const imgToDataURL = (url) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = (e) => {
+      console.warn("Failed to convert image to Base64, using original URL:", url);
+      resolve(url); // Fallback to original URL
+    };
+    img.src = url;
+  });
+};
+
 // --- 1. Reusable Visual Component (The Card Itself) ---
-export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1 }) => {
+export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1, isExporting = false }) => {
   // Calculate Overall Rating
   const statsArr = Object.values(player.stats || {});
   const overall = statsArr.length ? Math.round(statsArr.reduce((a, b) => a + b, 0) / statsArr.length) : 0;
@@ -34,10 +55,10 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
   const borderX = pitchSettings.cardBorderX || 0;
   const borderY = pitchSettings.cardBorderY || 0;
 
-  // Manual Fit Adjustments (Global Content - TEXT & INFO)
+  // Manual Fit Adjustments
   const contentScale = (pitchSettings.cardContentScale || 100) / 100;
-  const contentX = pitchSettings.cardContentX || 0;
-  const contentY = pitchSettings.cardContentY || 0;
+  const translateY = pitchSettings.cardContentY || 0;
+  const translateX = pitchSettings.cardContentX || 0;
 
   // Player Image Specific Adjustments
   const pSet = player.photoSettings || {};
@@ -66,15 +87,19 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
     { label: 'DEF', val: stats.heading || stats.def || 0 },
   ];
 
+  // When exporting, we might need to adjust some styles to ensure visibility
+  // But with Base64 conversion strategy, standard styles should work better.
+
   return (
     <div 
       ref={cardRef}
-      className="relative w-[380px] h-[500px] overflow-hidden font-fifa shadow-2xl origin-top-left"
+      className="relative w-[380px] h-[500px] overflow-hidden font-fifa shadow-2xl origin-top-left bg-transparent"
       style={{
+        // Clip-path can be tricky in html2canvas. If exporting, we might relax it or rely on the PNG overlay.
         clipPath: "path('M 50 15 L 330 15 C 330 15 330 40 365 55 L 365 350 C 365 450 190 485 190 485 C 190 485 15 450 15 350 L 15 55 C 50 40 50 15 50 15 Z')",
         transform: `scale(${scale})`, 
         marginBottom: scale < 1 ? `-${500 * (1 - scale)}px` : 0, 
-        marginRight: scale < 1 ? `-${380 * (1 - scale)}px` : 0
+        marginRight: scale < 1 ? `-${380 * (1 - scale)}px` : 0,
       }}
     >
       {/* 1. Base Color / Gradient */}
@@ -93,15 +118,15 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
         }}
       ></div>
 
-      {/* 3. Content Layer (Text & Info) - SEPARATED FROM IMAGE */}
+      {/* 3. Content Layer */}
       <div 
-        className="absolute inset-0 z-30 flex flex-col px-14 py-16 pointer-events-none"
+        className="absolute inset-0 z-20 flex flex-col px-14 py-16 transition-transform duration-200"
         style={{
-          transform: `scale(${contentScale}) translate(${contentX}px, ${contentY}px)`
+          transform: `scale(${contentScale}) translate(${translateX}px, ${translateY}px)`
         }}
       >
         
-        {/* Top Section Info (Rating, Club, Nation) */}
+        {/* Top Section */}
         <div className="flex flex-1 relative">
           
           {/* Left Info Column */}
@@ -128,9 +153,25 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
             </div>
           </div>
 
+          {/* Player Image */}
+          <div className="absolute top-4 right-[-20px] w-[200px] h-[240px] z-20 flex items-end justify-center">
+            {player.avatar ? (
+              <img 
+                src={player.avatar} 
+                alt={player.name} 
+                className="w-full h-full object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)] transition-all duration-200"
+                style={{
+                  transform: `scale(${imgScale}) translate(${imgX}px, ${imgY}px)`,
+                  clipPath: `inset(${cropTop}% ${cropRight}% ${cropBottom}% ${cropLeft}%)`
+                }}
+              />
+            ) : (
+              <div className="text-white/20 text-8xl font-fifa">?</div>
+            )}
+          </div>
         </div>
 
-        {/* Bottom Section (Name & Stats) */}
+        {/* Bottom Section */}
         <div className="mt-auto relative z-30 pb-6">
           {/* Name */}
           <div className="text-center mb-2">
@@ -140,7 +181,7 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
             <div className="h-[1px] w-3/4 mx-auto bg-gradient-to-r from-transparent via-[#fde047] to-transparent opacity-60"></div>
           </div>
 
-          {/* Stats - 7 Items Grid */}
+          {/* Stats */}
           <div className="grid grid-cols-2 gap-x-2 gap-y-0 px-2">
             {displayStats.map((stat, i) => (
               <div key={i} className={cn(
@@ -153,7 +194,7 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
             ))}
           </div>
           
-          {/* Vote Count Indicator */}
+          {/* Vote Count */}
           {voteCount > 0 && (
             <div className="absolute -bottom-4 left-0 right-0 flex justify-center">
               <div className="flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm border border-[#fde047]/20">
@@ -166,34 +207,13 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
 
       </div>
 
-      {/* 3b. Image Layer (Separate for Independent Control) */}
-      <div className="absolute inset-0 z-20 px-14 py-16 flex flex-col pointer-events-none">
-          <div className="flex flex-1 relative">
-            <div className="absolute top-4 right-[-20px] w-[200px] h-[240px] z-20 flex items-end justify-center">
-                {player.avatar ? (
-                <img 
-                    src={player.avatar} 
-                    alt={player.name} 
-                    className="w-full h-full object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)] transition-all duration-200"
-                    style={{
-                    transform: `scale(${imgScale}) translate(${imgX}px, ${imgY}px)`,
-                    clipPath: `inset(${cropTop}% ${cropRight}% ${cropBottom}% ${cropLeft}%)`
-                    }}
-                />
-                ) : (
-                <div className="text-white/20 text-8xl font-fifa">?</div>
-                )}
-            </div>
-          </div>
-      </div>
-
-      {/* 4. Border Layer (ADJUSTABLE) */}
+      {/* 4. Border Layer */}
       <div 
         className="absolute inset-0 z-40 pointer-events-none transition-all duration-200"
         style={{
           backgroundImage: `url('${BORDER_URL}')`,
-          backgroundSize: `${borderScale}% ${borderScale}%`, // Scale both dimensions
-          backgroundPosition: `${50 + borderX}% ${50 + borderY}%`, // Center + Offset
+          backgroundSize: `${borderScale}% ${borderScale}%`,
+          backgroundPosition: `${50 + borderX}% ${50 + borderY}%`,
           backgroundRepeat: 'no-repeat'
         }}
       ></div>
@@ -211,35 +231,69 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
 
   const handleDownload = async () => {
     if (cardRef.current) {
-      const images = cardRef.current.querySelectorAll('img');
-      const promises = Array.from(images).map(img => {
-        if (img.complete) return Promise.resolve();
-        return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; });
-      });
-      await Promise.all(promises);
-
-      await new Promise(resolve => setTimeout(resolve, 100));
-
       try {
+        // 1. Pre-process images to Data URLs to bypass CORS completely
+        const TEXTURE_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/xmbei8xh_textura%20de%20tela.png";
+        const BORDER_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/g95tghim_borde%20dorado.png";
+        
+        // Convert texture and border to Base64
+        const textureBase64 = await imgToDataURL(TEXTURE_URL);
+        const borderBase64 = await imgToDataURL(BORDER_URL);
+        
+        // Temporarily swap background images in the DOM with Base64 versions
+        const textureDiv = cardRef.current.querySelector('.mix-blend-multiply');
+        const borderDiv = cardRef.current.querySelector('.z-40');
+        
+        const originalTexture = textureDiv.style.backgroundImage;
+        const originalBorder = borderDiv.style.backgroundImage;
+        
+        textureDiv.style.backgroundImage = `url('${textureBase64}')`;
+        borderDiv.style.backgroundImage = `url('${borderBase64}')`;
+
+        // Also handle avatar/nation/logo images if they are external
+        const imgs = cardRef.current.querySelectorAll('img');
+        const originalSrcs = [];
+        for (let i = 0; i < imgs.length; i++) {
+          originalSrcs.push(imgs[i].src);
+          if (imgs[i].src.startsWith('http')) {
+             try {
+               const base64 = await imgToDataURL(imgs[i].src);
+               imgs[i].src = base64;
+             } catch (e) {
+               console.warn("Could not convert image", imgs[i].src);
+             }
+          }
+        }
+
+        // 2. Generate Canvas with ForeignObjectRendering enabled for best CSS support
         const canvas = await html2canvas(cardRef.current, {
           backgroundColor: null,
           scale: 3,
-          useCORS: true,
+          useCORS: true, 
           logging: false,
-          allowTaint: false, // Must be false for download
-          foreignObjectRendering: false, // Disabled for stability
+          allowTaint: true, // Now safe because we manually handled images
+          foreignObjectRendering: true, // Required for mix-blend-mode and clip-path
           removeContainer: true,
         });
         
+        // 3. Revert DOM changes
+        textureDiv.style.backgroundImage = originalTexture;
+        borderDiv.style.backgroundImage = originalBorder;
+        for (let i = 0; i < imgs.length; i++) {
+          imgs[i].src = originalSrcs[i];
+        }
+
+        // 4. Download
         const link = document.createElement('a');
         link.download = `${player.name}_card.png`;
         link.href = canvas.toDataURL('image/png');
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+
       } catch (error) {
         console.error("Export failed:", error);
-        alert("Error al exportar. Por favor intenta de nuevo. (Detalle: " + error.message + ")");
+        alert("Error al exportar. Por favor intenta de nuevo.");
       }
     }
   };
