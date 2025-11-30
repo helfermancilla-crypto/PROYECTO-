@@ -204,7 +204,7 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
           />
         </div>
 
-        <div className="flex gap-2 mt-6 w-full justify-center">
+        <div className="flex gap-3 mt-6 w-full justify-center items-center">
           {/* Removed Download Button */}
           <Button onClick={() => onEdit(player)} size="icon" className="rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20">
             <Edit className="w-5 h-5" />
@@ -212,6 +212,13 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
           <Button onClick={() => onGenerateLink(player)} className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white border-none px-6 font-fifa tracking-wide">
             <Share2 className="w-4 h-4 mr-2" /> Votar
           </Button>
+          
+          {/* Vote Counter - ALWAYS VISIBLE next to Votar button */}
+          <div className="flex items-center gap-1.5 bg-[#fde047]/20 px-3 py-1.5 rounded-full backdrop-blur-sm border border-[#fde047]/40">
+            <Users className="w-4 h-4 text-[#fde047]" />
+            <span className="text-sm font-bold text-white">{player.voteCount || player.votes?.length || 0} Votos</span>
+          </div>
+          
           <DialogClose asChild>
              <Button size="icon" className="rounded-full bg-red-500/20 hover:bg-red-500/40 text-red-200 border border-red-500/50">
                 <X className="w-5 h-5" />
