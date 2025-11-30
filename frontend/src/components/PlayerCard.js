@@ -6,14 +6,31 @@ import html2canvas from 'html2canvas';
 import { cn } from '@/lib/utils';
 import { useTeam } from '../context/TeamContext';
 
-// --- 1. Reusable Visual Component (The Card Itself) ---
+// --- Helper to convert image URL to Data URL ---
+const imgToDataURL = (url) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(url); 
+    img.src = url;
+  });
+};
+
+// --- 1. Reusable Visual Component ---
 export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1 }) => {
   // Calculate Overall Rating
   const statsArr = Object.values(player.stats || {});
   const overall = statsArr.length ? Math.round(statsArr.reduce((a, b) => a + b, 0) / statsArr.length) : 0;
   const voteCount = player.votes ? player.votes.length : 0;
   
-  // Colors & Gradient Logic
   const color1 = pitchSettings.cardColor || '#1e293b';
   const color2 = pitchSettings.cardColor2 || '#0f172a';
   const gradientType = pitchSettings.cardGradient || 'diagonal';
@@ -23,29 +40,24 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
   if (gradientType === 'horizontal') backgroundStyle = { background: `linear-gradient(to right, ${color1}, ${color2})` };
   if (gradientType === 'diagonal') backgroundStyle = { background: `linear-gradient(135deg, ${color1}, ${color2})` };
 
-  // Texture Settings
   const texScale = pitchSettings.cardTextureScale || 150;
   const texX = pitchSettings.cardTextureX || 50;
   const texY = pitchSettings.cardTextureY || 50;
   const texOpacity = pitchSettings.cardTextureOpacity ?? 0.5;
 
-  // Border Settings
   const borderScale = pitchSettings.cardBorderScale || 100;
   const borderX = pitchSettings.cardBorderX || 0;
   const borderY = pitchSettings.cardBorderY || 0;
 
-  // Manual Fit Adjustments (Global Content)
   const contentScale = (pitchSettings.cardContentScale || 100) / 100;
   const translateY = pitchSettings.cardContentY || 0;
   const translateX = pitchSettings.cardContentX || 0;
 
-  // Player Image Specific Adjustments
   const pSet = player.photoSettings || {};
   const imgScale = (pSet.scale || 100) / 100;
   const imgX = pSet.x || 0;
   const imgY = pSet.y || 0;
   
-  // Crops
   const cropTop = pSet.cropTop || 0;
   const cropRight = pSet.cropRight || 0;
   const cropBottom = pSet.cropBottom || 0;
@@ -162,14 +174,13 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
             ))}
           </div>
           
-          {voteCount > 0 && (
-            <div className="absolute -bottom-4 left-0 right-0 flex justify-center">
-              <div className="flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm border border-[#fde047]/20">
-                <Users className="w-3 h-3 text-[#fde047]" />
-                <span className="text-[10px] font-bold text-white">{voteCount} Votos</span>
-              </div>
+          {/* Vote Count Indicator - ALWAYS VISIBLE */}
+          <div className="absolute -bottom-4 left-0 right-0 flex justify-center">
+            <div className="flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm border border-[#fde047]/20">
+              <Users className="w-3 h-3 text-[#fde047]" />
+              <span className="text-[10px] font-bold text-white">{voteCount} Votos</span>
             </div>
-          )}
+          </div>
         </div>
       </div>
 
@@ -191,41 +202,146 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
 const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
   const cardRef = useRef(null);
   const { pitchSettings, clubInfo } = useTeam();
+  const [generatedImage, setGeneratedImage] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   if (!player) return null;
 
-  // Removed handleDownload logic
+  const handleGenerate = async () => {
+    setIsGenerating(true);
+    if (cardRef.current) {
+      try {
+        // Pre-process images
+        const TEXTURE_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/xmbei8xh_textura%20de%20tela.png";
+        const BORDER_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/g95tghim_borde%20dorado.png";
+        
+        const textureBase64 = await imgToDataURL(TEXTURE_URL);
+        const borderBase64 = await imgToDataURL(BORDER_URL);
+        
+        // Temporarily swap DOM images
+        const textureDiv = cardRef.current.querySelector('.mix-blend-multiply');
+        const borderDiv = cardRef.current.querySelector('.z-40');
+        
+        const originalTexture = textureDiv.style.backgroundImage;
+        const originalBorder = borderDiv.style.backgroundImage;
+        
+        textureDiv.style.backgroundImage = `url('${textureBase64}')`;
+        borderDiv.style.backgroundImage = `url('${borderBase64}')`;
+
+        const imgs = cardRef.current.querySelectorAll('img');
+        const originalSrcs = [];
+        for (let i = 0; i < imgs.length; i++) {
+          originalSrcs.push(imgs[i].src);
+          if (imgs[i].src.startsWith('http')) {
+             try {
+               const base64 = await imgToDataURL(imgs[i].src);
+               imgs[i].src = base64;
+             } catch (e) { console.warn(e); }
+          }
+        }
+
+        const canvas = await html2canvas(cardRef.current, {
+          backgroundColor: null,
+          scale: 3,
+          useCORS: true, 
+          logging: false,
+          allowTaint: true,
+          foreignObjectRendering: true,
+          removeContainer: true,
+        });
+        
+        textureDiv.style.backgroundImage = originalTexture;
+        borderDiv.style.backgroundImage = originalBorder;
+        for (let i = 0; i < imgs.length; i++) {
+          imgs[i].src = originalSrcs[i];
+        }
+
+        const imgData = canvas.toDataURL('image/png');
+        setGeneratedImage(imgData);
+        
+        try {
+            const link = document.createElement('a');
+            link.download = `${player.name}_card.png`;
+            link.href = imgData;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch(e) {
+            console.warn("Auto-download blocked, showing manual option");
+        }
+
+      } catch (error) {
+        console.error("Generation failed:", error);
+        alert("Error al generar la imagen.");
+      } finally {
+        setIsGenerating(false);
+      }
+    }
+  };
+
+  const handleClose = (open) => {
+    if (!open) setGeneratedImage(null);
+    onOpenChange(open);
+  };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] p-0 bg-transparent border-none shadow-none overflow-hidden flex flex-col items-center">
-        
-        <div className="relative group">
-          <CardVisual 
-            player={player} 
-            pitchSettings={pitchSettings} 
-            clubInfo={clubInfo} 
-            cardRef={cardRef} 
-          />
-        </div>
+    <>
+      <Dialog open={open} onOpenChange={handleClose}>
+        <DialogContent className="sm:max-w-[500px] p-0 bg-transparent border-none shadow-none overflow-hidden flex flex-col items-center">
+          
+          <div className="relative group">
+            <CardVisual 
+              player={player} 
+              pitchSettings={pitchSettings} 
+              clubInfo={clubInfo} 
+              cardRef={cardRef} 
+            />
+          </div>
 
-        <div className="flex gap-2 mt-6 w-full justify-center">
-          {/* Removed Download Button */}
-          <Button onClick={() => onEdit(player)} size="icon" className="rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20">
-            <Edit className="w-5 h-5" />
-          </Button>
-          <Button onClick={() => onGenerateLink(player)} className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white border-none px-6 font-fifa tracking-wide">
-            <Share2 className="w-4 h-4 mr-2" /> Votar
-          </Button>
-          <DialogClose asChild>
-             <Button size="icon" className="rounded-full bg-red-500/20 hover:bg-red-500/40 text-red-200 border border-red-500/50">
-                <X className="w-5 h-5" />
-             </Button>
-          </DialogClose>
-        </div>
+          <div className="flex gap-2 mt-6 w-full justify-center">
+            {/* Removed Download Button from here */}
+            <Button onClick={() => onEdit(player)} size="icon" className="rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20">
+              <Edit className="w-5 h-5" />
+            </Button>
+            <Button onClick={() => onGenerateLink(player)} className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white border-none px-6 font-fifa tracking-wide">
+              <Share2 className="w-4 h-4 mr-2" /> Votar
+            </Button>
+            <DialogClose asChild>
+               <Button size="icon" className="rounded-full bg-red-500/20 hover:bg-red-500/40 text-red-200 border border-red-500/50">
+                  <X className="w-5 h-5" />
+               </Button>
+            </DialogClose>
+          </div>
 
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!generatedImage} onOpenChange={() => setGeneratedImage(null)}>
+        <DialogContent className="sm:max-w-[600px] bg-slate-900 border-slate-800 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-emerald-400">¡Tarjeta Lista!</DialogTitle>
+          </DialogHeader>
+          
+          <div className="flex flex-col items-center space-y-4 py-4">
+            <div className="bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')] bg-slate-950 p-4 rounded-lg border border-slate-800 shadow-inner">
+                {generatedImage && (
+                    <img src={generatedImage} alt="Generated Card" className="h-[400px] w-auto object-contain shadow-2xl rounded-lg" />
+                )}
+            </div>
+            <p className="text-sm text-center text-slate-400 max-w-xs">
+              Si la descarga no empezó automáticamente: <br/>
+              <span className="text-emerald-400 font-bold">Haz clic derecho (o mantén presionado) en la imagen y elige "Guardar imagen"</span>
+            </p>
+          </div>
+
+          <DialogFooter>
+            <Button onClick={() => setGeneratedImage(null)} variant="secondary" className="w-full">
+              Cerrar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

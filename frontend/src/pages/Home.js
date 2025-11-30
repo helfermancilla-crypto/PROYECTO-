@@ -38,13 +38,16 @@ const Home = () => {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [isCardOpen, setIsCardOpen] = useState(false);
   
+  // State for the Player Selector in Settings
   const [selectedPreviewPlayerId, setSelectedPreviewPlayerId] = useState('preview');
   
+  // Temporary state for individual photo adjustments before saving
   const [photoAdjustments, setPhotoAdjustments] = useState({
     scale: 100, x: 0, y: 0,
     cropTop: 0, cropBottom: 0, cropLeft: 0, cropRight: 0
   });
 
+  // Effect to load player's saved settings when selected
   React.useEffect(() => {
     if (selectedPreviewPlayerId === 'preview') {
       setPhotoAdjustments({ scale: 100, x: 0, y: 0, cropTop: 0, cropBottom: 0, cropLeft: 0, cropRight: 0 });
@@ -503,6 +506,16 @@ const Home = () => {
                             <div className="space-y-1">
                               <div className="flex justify-between text-[10px]"><span>Opacidad</span><span>{Math.round((pitchSettings.cardTextureOpacity ?? 0.5) * 100)}%</span></div>
                               <Slider value={[(pitchSettings.cardTextureOpacity ?? 0.5) * 100]} min={0} max={100} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, cardTextureOpacity: v[0]/100}))} className="[&>.relative>.absolute]:bg-slate-500" />
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="space-y-1">
+                                    <div className="flex justify-between text-[10px]"><span>Pos X</span></div>
+                                    <Slider value={[pitchSettings.cardTextureX || 50]} min={0} max={100} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, cardTextureX: v[0]}))} className="[&>.relative>.absolute]:bg-slate-500" />
+                                </div>
+                                <div className="space-y-1">
+                                    <div className="flex justify-between text-[10px]"><span>Pos Y</span></div>
+                                    <Slider value={[pitchSettings.cardTextureY || 50]} min={0} max={100} step={1} onValueChange={(v) => setPitchSettings(prev => ({...prev, cardTextureY: v[0]}))} className="[&>.relative>.absolute]:bg-slate-500" />
+                                </div>
                             </div>
                           </div>
                         </div>
