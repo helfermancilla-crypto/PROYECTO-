@@ -67,20 +67,19 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
   const BORDER_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/g95tghim_borde%20dorado.png";
 
   // CORRECT STATS MAPPING (Matching Form Data)
+  // Form keys: pac, sho, pas, dri, def, phy, rec (added later)
+  // Display keys: RIT, TIR, PAS, REG, DEF, FIS, REC
+  
   const stats = player.stats || {};
   
-  // The form uses these keys: pac, sho, pas, dri, def, phy, rec (added later)
-  // If 'rec' is missing, it might be under 'reception' or just 0
-  
   const displayStats = [
-    { label: 'RIT', val: stats.pac || 0 }, // Ritmo
-    { label: 'REG', val: stats.dri || 0 }, // Regate
-    { label: 'TIR', val: stats.sho || 0 }, // Tiro
-    { label: 'DEF', val: stats.def || 0 }, // Defensa
-    { label: 'PAS', val: stats.pas || 0 }, // Pase
-    { label: 'FIS', val: stats.phy || 0 }, // Físico
-    // The 7th stat: Recepción
-    { label: 'REC', val: stats.rec || stats.reception || 0 }, 
+    { label: 'RIT', val: stats.pac || stats.speed || 0 },
+    { label: 'TIR', val: stats.sho || stats.shooting || 0 },
+    { label: 'PAS', val: stats.pas || stats.passing || 0 },
+    { label: 'REG', val: stats.dri || stats.dribbling || 0 },
+    { label: 'DEF', val: stats.def || stats.heading || 0 },
+    { label: 'FIS', val: stats.phy || stats.stamina || 0 },
+    { label: 'REC', val: stats.rec || stats.reception || 0 }, // Ensure 'rec' is mapped
   ];
 
   return (
@@ -208,12 +207,14 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
     setIsGenerating(true);
     if (cardRef.current) {
       try {
+        // Pre-process images
         const TEXTURE_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/xmbei8xh_textura%20de%20tela.png";
         const BORDER_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/g95tghim_borde%20dorado.png";
         
         const textureBase64 = await imgToDataURL(TEXTURE_URL);
         const borderBase64 = await imgToDataURL(BORDER_URL);
         
+        // Temporarily swap DOM images
         const textureDiv = cardRef.current.querySelector('.mix-blend-multiply');
         const borderDiv = cardRef.current.querySelector('.z-40');
         
@@ -235,6 +236,7 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
           }
         }
 
+        // Capture
         const canvas = await html2canvas(cardRef.current, {
           backgroundColor: null,
           scale: 3,
@@ -245,15 +247,18 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
           removeContainer: true,
         });
         
+        // Revert DOM
         textureDiv.style.backgroundImage = originalTexture;
         borderDiv.style.backgroundImage = originalBorder;
         for (let i = 0; i < imgs.length; i++) {
           imgs[i].src = originalSrcs[i];
         }
 
+        // Set Result
         const imgData = canvas.toDataURL('image/png');
         setGeneratedImage(imgData);
         
+        // Attempt Auto-Download
         try {
             const link = document.createElement('a');
             link.download = `${player.name}_card.png`;
