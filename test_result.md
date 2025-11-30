@@ -725,7 +725,7 @@ test_plan:
     file: "/app/frontend/src/components/PlayerCard.js"
     stuck_count: 0
     priority: "critical"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: "NA"
           agent: "testing"
