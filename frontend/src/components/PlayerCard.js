@@ -223,20 +223,12 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
       try {
         const canvas = await html2canvas(cardRef.current, {
           backgroundColor: null,
-          scale: 3, // High quality for crisp text
-          useCORS: true, // Essential for external images
+          scale: 3,
+          useCORS: true,
           logging: false,
-          allowTaint: true, // Enable taint to capture textures
-          foreignObjectRendering: true, // KEY FIX: Better support for CSS filters/mix-blend-mode
-          removeContainer: true, // Clean up
-          onclone: (clonedDoc) => {
-            // Fix potential clipping issues in clone
-            const clonedCard = clonedDoc.querySelector('.relative.w-\\[380px\\]');
-            if (clonedCard) {
-              clonedCard.style.transform = 'none'; // Remove scale transform during capture
-              clonedCard.style.margin = '0'; // Remove margins
-            }
-          }
+          allowTaint: false, // Must be false for download
+          foreignObjectRendering: false, // Disabled for stability
+          removeContainer: true,
         });
         
         const link = document.createElement('a');
@@ -246,6 +238,9 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
         link.click();
         document.body.removeChild(link);
       } catch (error) {
+        console.error("Export failed:", error);
+        alert("Error al exportar. Por favor intenta de nuevo. (Detalle: " + error.message + ")");
+      }
         console.error("Export failed:", error);
         alert("Error al exportar. Por favor intenta de nuevo. (Detalle: Posible bloqueo de seguridad del navegador)");
       }
