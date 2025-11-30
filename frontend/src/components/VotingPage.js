@@ -22,16 +22,18 @@ const VotingPage = () => {
       try {
         const response = await axios.get(`${API_URL}/player/${playerId}`);
         setPlayer(response.data);
-        // Ensure we have the correct stats structure
+        // Use the correct stats structure
         const stats = response.data.stats || {};
         setVotes({
-          speed: stats.speed || stats.pac || 70,
-          dribbling: stats.dribbling || stats.dri || 70,
-          reception: stats.reception || 70,
-          passing: stats.passing || stats.pas || 70,
-          shooting: stats.shooting || stats.sho || 70,
-          stamina: stats.stamina || stats.phy || 70,
-          heading: stats.heading || stats.def || 70
+          rit: stats.rit || 70,
+          tir: stats.tir || 70,
+          pas: stats.pas || 70,
+          reg: stats.reg || 70,
+          def: stats.def || 70,
+          fis: stats.fis || 70,
+          con: stats.con || 70,
+          res: stats.res || 70,
+          cab: stats.cab || 70
         });
       } catch (error) {
         console.error("Error fetching player:", error);
