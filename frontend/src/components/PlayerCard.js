@@ -167,16 +167,6 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
               </div>
             ))}
           </div>
-          
-          {/* Vote Count - ALWAYS VISIBLE IF > 0 */}
-          {voteCount > 0 && (
-            <div className="absolute -bottom-4 left-0 right-0 flex justify-center">
-              <div className="flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm border border-[#fde047]/20">
-                <Users className="w-3 h-3 text-[#fde047]" />
-                <span className="text-[10px] font-bold text-white">{voteCount} Votos</span>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
