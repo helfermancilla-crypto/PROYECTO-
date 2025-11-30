@@ -66,24 +66,21 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
   const TEXTURE_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/xmbei8xh_textura%20de%20tela.png";
   const BORDER_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/g95tghim_borde%20dorado.png";
 
-  // 9 STATS MAPPING (Matching Form Data)
+  // 9 STATS MAPPING (3 COLUMNS)
   const stats = player.stats || {};
   
-  // Display as 3x3 Grid
   const displayStats = [
-    // Col 1: General
+    // Col 1
     { label: 'RIT', val: stats.rit || 0 },
-    { label: 'PAS', val: stats.pas || 0 },
-    { label: 'RES', val: stats.res || 0 },
-    
-    // Col 2: Technical
     { label: 'TIR', val: stats.tir || 0 },
+    { label: 'PAS', val: stats.pas || 0 },
+    // Col 2
     { label: 'REG', val: stats.reg || 0 },
-    { label: 'CON', val: stats.con || 0 },
-    
-    // Col 3: Defense
     { label: 'DEF', val: stats.def || 0 },
     { label: 'FIS', val: stats.fis || 0 },
+    // Col 3
+    { label: 'CON', val: stats.con || 0 },
+    { label: 'RES', val: stats.res || 0 },
     { label: 'CAB', val: stats.cab || 0 },
   ];
 
@@ -165,12 +162,14 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
             <div className="h-[1px] w-3/4 mx-auto bg-gradient-to-r from-transparent via-[#fde047] to-transparent opacity-60"></div>
           </div>
 
-          {/* 9 STATS GRID - 3 Columns */}
-          <div className="grid grid-cols-3 gap-x-1 gap-y-1 px-0 text-center">
+          {/* 9 STATS GRID - 3 COLUMNS */}
+          <div className="grid grid-cols-3 gap-x-1 gap-y-0 px-0 text-center">
             {displayStats.map((stat, i) => (
-              <div key={i} className="flex flex-col items-center justify-center">
-                <span className="text-lg font-bold text-white drop-shadow-md leading-none">{stat.val}</span>
-                <span className="text-[10px] font-bold text-[#fde047] uppercase tracking-wider drop-shadow-md leading-none">{stat.label}</span>
+              <div key={i} className="flex flex-col items-center justify-center leading-tight">
+                <div className="flex items-baseline gap-1">
+                    <span className="text-lg font-bold text-white drop-shadow-md">{stat.val}</span>
+                    <span className="text-[10px] font-bold text-[#fde047] uppercase tracking-wider drop-shadow-md">{stat.label}</span>
+                </div>
               </div>
             ))}
           </div>
