@@ -607,6 +607,21 @@ test_plan:
           agent: "testing"
           comment: "❌ MISSING STATS FIX TESTING COMPLETED - CRITICAL ISSUE PERSISTS: Comprehensive testing of the Missing Stats Fix completed with detailed verification. FINDINGS: 1) Form correctly displays all 9 stats (Ritmo, Pase, Resistencia, Tiro, Regate, Control, Defensa, Físico, Cabezazo) in proper 3x3 grid layout ✅ 2) Form accepts custom input values (11, 22, 33, 44, 55, 66, 77, 88, 99) and displays them correctly in the UI ✅ 3) Player creation and saving works successfully ✅ 4) Player card opens and displays all 9 stats in correct 3x3 grid format with proper labels (RIT, PAS, RES, TIR, REG, CON, DEF, FIS, CAB) ✅ 5) CRITICAL ISSUE CONFIRMED: All stat values in player card show 0 instead of the entered custom values ❌. The stats input synchronization bug is still present - while users can enter custom values in the form and see them visually, the actual form submission saves default values (0) instead of the user's input. This makes the stats customization feature completely non-functional from a user perspective. The 9-stat system is properly implemented but the core functionality of saving custom stat values is broken."
 
+  - task: "UI Cleanup and Stats Layout Fix"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/components/PlayerForm.js, /app/frontend/src/components/PlayerCard.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "UI Cleanup and Stats Layout Fix test requested - needs comprehensive verification of: 1) App opening, 2) Adding a player, 3) Checking Stats tab for removed section titles ('General', 'Técnica', 'Defensa'), 4) Opening Player Card, 5) Verifying 3-column stats layout (Left: RIT, TIR, PAS | Middle: REG, DEF, FIS | Right: CON, RES, CAB), 6) Verifying Download button is GONE, 7) Verifying card design integrity (border, texture)."
+        - working: false
+          agent: "testing"
+          comment: "❌ PARTIAL UI CLEANUP COMPLETED - CRITICAL ISSUE FOUND: Comprehensive testing of UI Cleanup and Stats Layout Fix completed with mixed results. FINDINGS: 1) App opens successfully ✅ 2) Player form opens correctly ✅ 3) Stats tab accessible with 3-column grid layout (3 grids found) ✅ 4) CRITICAL ISSUE: Section title 'DEFENSA' still present (1 found) - 'General' and 'Técnica' successfully removed but 'Defensa' remains ❌ 5) Form shows proper 3x3 grid organization ✅ 6) 8 roster items available for testing ✅ 7) Unable to complete Player Card testing due to Playwright locator syntax issues ⚠️. CONCLUSION: The UI cleanup is PARTIALLY implemented - 2/3 old section titles have been successfully removed ('General', 'Técnica') but 'Defensa' still appears in the Stats tab. The 3-column grid layout is working correctly in the form. Player Card testing was interrupted by technical issues but the form-level changes are mostly successful. The remaining 'Defensa' title needs to be removed to complete the UI cleanup task."
+
   - task: "Stats Layout Fix (3 Columns)"
     implemented: true
     working: true
