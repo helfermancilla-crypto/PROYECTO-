@@ -50,9 +50,13 @@ class Player(BaseModel):
     number: str
     role: str
     avatar: Optional[str] = ""
+    nation: Optional[str] = ""
     stats: Stats
     position: Position
     votes: List[Dict[str, int]] = []
+    voteCount: int = 0
+    photoSettings: Optional[Dict[str, Any]] = None
+    originalStats: Optional[Dict[str, int]] = None
 
 class PitchSettings(BaseModel):
     mode: str = '11'
