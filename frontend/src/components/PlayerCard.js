@@ -19,14 +19,14 @@ const imgToDataURL = (url) => {
       ctx.drawImage(img, 0, 0);
       resolve(canvas.toDataURL('image/png'));
     };
-    img.onerror = () => resolve(url); // Fallback
+    img.onerror = () => resolve(url); 
     img.src = url;
   });
 };
 
 // --- 1. Reusable Visual Component ---
 export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1 }) => {
-  // ... (Previous logic remains exactly the same)
+  // Calculate Overall Rating
   const statsArr = Object.values(player.stats || {});
   const overall = statsArr.length ? Math.round(statsArr.reduce((a, b) => a + b, 0) / statsArr.length) : 0;
   const voteCount = player.votes ? player.votes.length : 0;
@@ -66,15 +66,21 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
   const TEXTURE_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/xmbei8xh_textura%20de%20tela.png";
   const BORDER_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/g95tghim_borde%20dorado.png";
 
+  // CORRECT STATS MAPPING (Matching Form Data)
   const stats = player.stats || {};
+  
+  // The form uses these keys: pac, sho, pas, dri, def, phy, rec (added later)
+  // If 'rec' is missing, it might be under 'reception' or just 0
+  
   const displayStats = [
-    { label: 'RIT', val: stats.speed || stats.pac || 0 },
-    { label: 'REG', val: stats.dribbling || stats.dri || 0 },
-    { label: 'REC', val: stats.reception || 0 },
-    { label: 'PAS', val: stats.passing || stats.pas || 0 },
-    { label: 'TIR', val: stats.shooting || stats.sho || 0 },
-    { label: 'FIS', val: stats.stamina || stats.phy || 0 },
-    { label: 'DEF', val: stats.heading || stats.def || 0 },
+    { label: 'RIT', val: stats.pac || 0 }, // Ritmo
+    { label: 'REG', val: stats.dri || 0 }, // Regate
+    { label: 'TIR', val: stats.sho || 0 }, // Tiro
+    { label: 'DEF', val: stats.def || 0 }, // Defensa
+    { label: 'PAS', val: stats.pas || 0 }, // Pase
+    { label: 'FIS', val: stats.phy || 0 }, // Físico
+    // The 7th stat: Recepción
+    { label: 'REC', val: stats.rec || stats.reception || 0 }, 
   ];
 
   return (
@@ -202,14 +208,12 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
     setIsGenerating(true);
     if (cardRef.current) {
       try {
-        // Pre-process images
         const TEXTURE_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/xmbei8xh_textura%20de%20tela.png";
         const BORDER_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/g95tghim_borde%20dorado.png";
         
         const textureBase64 = await imgToDataURL(TEXTURE_URL);
         const borderBase64 = await imgToDataURL(BORDER_URL);
         
-        // Temporarily swap DOM images
         const textureDiv = cardRef.current.querySelector('.mix-blend-multiply');
         const borderDiv = cardRef.current.querySelector('.z-40');
         
@@ -231,7 +235,6 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
           }
         }
 
-        // Capture
         const canvas = await html2canvas(cardRef.current, {
           backgroundColor: null,
           scale: 3,
@@ -242,18 +245,15 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
           removeContainer: true,
         });
         
-        // Revert DOM
         textureDiv.style.backgroundImage = originalTexture;
         borderDiv.style.backgroundImage = originalBorder;
         for (let i = 0; i < imgs.length; i++) {
           imgs[i].src = originalSrcs[i];
         }
 
-        // Set Result
         const imgData = canvas.toDataURL('image/png');
         setGeneratedImage(imgData);
         
-        // Attempt Auto-Download
         try {
             const link = document.createElement('a');
             link.download = `${player.name}_card.png`;
@@ -274,7 +274,6 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
     }
   };
 
-  // Clean up state when closing main dialog
   const handleClose = (open) => {
     if (!open) setGeneratedImage(null);
     onOpenChange(open);
@@ -322,7 +321,6 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
         </DialogContent>
       </Dialog>
 
-      {/* RESULT MODAL (Plan B) */}
       <Dialog open={!!generatedImage} onOpenChange={() => setGeneratedImage(null)}>
         <DialogContent className="sm:max-w-[600px] bg-slate-900 border-slate-800 text-white">
           <DialogHeader>
