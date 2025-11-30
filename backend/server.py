@@ -137,18 +137,25 @@ async def vote_player(player_id: str, vote_stats: Stats):
     # Add vote
     current_player = players[player_index]
     votes = current_player.get("votes", [])
-    votes.append(vote_stats.model_dump())
+    vote_dict = vote_stats.model_dump(by_alias=True)
+    votes.append(vote_dict)
     
-    # Recalculate averages
-    new_stats = current_player["stats"].copy()
+    # Recalculate averages using the correct stat names
+    stat_keys = ['rit', 'tir', 'pas', 'reg', 'def', 'fis', 'con', 'res', 'cab']
+    new_stats = {}
     if votes:
-        for key in new_stats:
+        for key in stat_keys:
             total = sum(v.get(key, 0) for v in votes)
             new_stats[key] = round(total / len(votes))
+    else:
+        # Default stats if no votes
+        for key in stat_keys:
+            new_stats[key] = 70
             
     # Update in DB
     current_player["votes"] = votes
     current_player["stats"] = new_stats
+    current_player["voteCount"] = len(votes)
     players[player_index] = current_player
     
     await db.teams.update_one(
