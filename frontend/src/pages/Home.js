@@ -38,16 +38,13 @@ const Home = () => {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [isCardOpen, setIsCardOpen] = useState(false);
   
-  // State for the Player Selector in Settings
   const [selectedPreviewPlayerId, setSelectedPreviewPlayerId] = useState('preview');
   
-  // Temporary state for individual photo adjustments before saving
   const [photoAdjustments, setPhotoAdjustments] = useState({
     scale: 100, x: 0, y: 0,
     cropTop: 0, cropBottom: 0, cropLeft: 0, cropRight: 0
   });
 
-  // Effect to load player's saved settings when selected
   React.useEffect(() => {
     if (selectedPreviewPlayerId === 'preview') {
       setPhotoAdjustments({ scale: 100, x: 0, y: 0, cropTop: 0, cropBottom: 0, cropLeft: 0, cropRight: 0 });
@@ -215,12 +212,10 @@ const Home = () => {
     }
   };
 
-  // Determine which player to show in preview
   const currentPlayer = selectedPreviewPlayerId === 'preview' 
     ? dummyPlayer 
     : players.find(p => p.id === selectedPreviewPlayerId) || dummyPlayer;
 
-  // Merge the photo adjustments into the player object for rendering ONLY
   const playerWithAdjustments = {
     ...currentPlayer,
     photoSettings: photoAdjustments
@@ -271,6 +266,24 @@ const Home = () => {
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950"></div>
           
           <Pitch onPlayerClick={handlePlayerClick} />
+
+          {/* PITCH COLOR DROPDOWN - MOVED TO TOP LEFT AS ORDERED */}
+          <div className="absolute top-4 left-4 z-20 bg-slate-900/80 backdrop-blur rounded-md border border-slate-700 shadow-lg p-1">
+            <Select 
+              value={pitchSettings.color} 
+              onValueChange={(v) => setPitchSettings(prev => ({...prev, color: v}))}
+            >
+              <SelectTrigger className="bg-transparent border-none h-8 text-xs w-[120px] focus:ring-0 text-white">
+                <SelectValue placeholder="Color Campo" />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                <SelectItem value="green">Verde Clásico</SelectItem>
+                <SelectItem value="red">Rojo Infierno</SelectItem>
+                <SelectItem value="blue">Azul Noche</SelectItem>
+                <SelectItem value="black">Obsidiana</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* Right: Controls & Roster */}
@@ -321,7 +334,6 @@ const Home = () => {
                     <SheetTitle className="text-emerald-400">Estación de Edición</SheetTitle>
                   </SheetHeader>
                   
-                  {/* NEW SIDE-BY-SIDE LAYOUT */}
                   <div className="flex flex-col lg:flex-row h-full py-6 gap-8">
                     
                     {/* LEFT COLUMN: STICKY PREVIEW */}
@@ -421,7 +433,7 @@ const Home = () => {
                         </div>
                       </div>
 
-                      {/* 2. TEXT & INFO ADJUSTMENTS (NEW) */}
+                      {/* 2. TEXT & INFO ADJUSTMENTS */}
                       <div className="space-y-4 border-b border-slate-800 pb-6">
                         <Label className="text-sm text-emerald-400 uppercase font-bold flex items-center gap-2">
                           <Type className="w-4 h-4" /> Ajuste de Textos e Información (Global)

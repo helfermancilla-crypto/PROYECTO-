@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Download, Share2, Edit, X, Users, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Download, Share2, Edit, X, Users } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { cn } from '@/lib/utils';
 import { useTeam } from '../context/TeamContext';
@@ -66,18 +66,16 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
   const TEXTURE_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/xmbei8xh_textura%20de%20tela.png";
   const BORDER_URL = "https://customer-assets.emergentagent.com/job_cardcreator-11/artifacts/g95tghim_borde%20dorado.png";
 
-  // CORRECT STATS MAPPING (Matching Form Data)
   const stats = player.stats || {};
-  
   const displayStats = [
     { label: 'RIT', val: stats.rit || 0 },
-    { label: 'PAS', val: stats.pas || 0 },
-    { label: 'RES', val: stats.res || 0 },
     { label: 'TIR', val: stats.tir || 0 },
+    { label: 'PAS', val: stats.pas || 0 },
     { label: 'REG', val: stats.reg || 0 },
-    { label: 'CON', val: stats.con || 0 },
     { label: 'DEF', val: stats.def || 0 },
     { label: 'FIS', val: stats.fis || 0 },
+    { label: 'CON', val: stats.con || 0 },
+    { label: 'RES', val: stats.res || 0 },
     { label: 'CAB', val: stats.cab || 0 },
   ];
 
@@ -159,7 +157,6 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
             <div className="h-[1px] w-3/4 mx-auto bg-gradient-to-r from-transparent via-[#fde047] to-transparent opacity-60"></div>
           </div>
 
-          {/* 9 STATS GRID - 3 COLUMNS - RESTORED VISIBILITY */}
           <div className="grid grid-cols-3 gap-x-1 gap-y-0 px-0 text-center">
             {displayStats.map((stat, i) => (
               <div key={i} className="flex flex-col items-center justify-center leading-tight">
@@ -171,13 +168,15 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
             ))}
           </div>
           
-          {/* Vote Count */}
-          <div className="absolute -bottom-4 left-0 right-0 flex justify-center">
-            <div className="flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm border border-[#fde047]/20">
-              <Users className="w-3 h-3 text-[#fde047]" />
-              <span className="text-[10px] font-bold text-white">{voteCount} Votos</span>
+          {/* Vote Count - ALWAYS VISIBLE IF > 0 */}
+          {voteCount > 0 && (
+            <div className="absolute -bottom-4 left-0 right-0 flex justify-center">
+              <div className="flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm border border-[#fde047]/20">
+                <Users className="w-3 h-3 text-[#fde047]" />
+                <span className="text-[10px] font-bold text-white">{voteCount} Votos</span>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -199,51 +198,39 @@ export const CardVisual = ({ player, pitchSettings, clubInfo, cardRef, scale = 1
 const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
   const cardRef = useRef(null);
   const { pitchSettings, clubInfo } = useTeam();
-  const [generatedImage, setGeneratedImage] = useState(null);
-  const [isGenerating, setIsGenerating] = useState(false);
 
   if (!player) return null;
 
-  // ... (Keep generation logic but remove button)
-
-  const handleClose = (open) => {
-    if (!open) setGeneratedImage(null);
-    onOpenChange(open);
-  };
-
   return (
-    <>
-      <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-[500px] p-0 bg-transparent border-none shadow-none overflow-hidden flex flex-col items-center">
-          
-          <div className="relative group">
-            <CardVisual 
-              player={player} 
-              pitchSettings={pitchSettings} 
-              clubInfo={clubInfo} 
-              cardRef={cardRef} 
-            />
-          </div>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px] p-0 bg-transparent border-none shadow-none overflow-hidden flex flex-col items-center">
+        
+        <div className="relative group">
+          <CardVisual 
+            player={player} 
+            pitchSettings={pitchSettings} 
+            clubInfo={clubInfo} 
+            cardRef={cardRef} 
+          />
+        </div>
 
-          <div className="flex gap-2 mt-6 w-full justify-center">
-            {/* REMOVED DOWNLOAD BUTTON AS REQUESTED */}
-            <Button onClick={() => onEdit(player)} size="icon" className="rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20">
-              <Edit className="w-5 h-5" />
-            </Button>
-            <Button onClick={() => onGenerateLink(player)} className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white border-none px-6 font-fifa tracking-wide">
-              <Share2 className="w-4 h-4 mr-2" /> Votar
-            </Button>
-            <DialogClose asChild>
-               <Button size="icon" className="rounded-full bg-red-500/20 hover:bg-red-500/40 text-red-200 border border-red-500/50">
-                  <X className="w-5 h-5" />
-               </Button>
-            </DialogClose>
-          </div>
+        <div className="flex gap-2 mt-6 w-full justify-center">
+          {/* Removed Download Button */}
+          <Button onClick={() => onEdit(player)} size="icon" className="rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20">
+            <Edit className="w-5 h-5" />
+          </Button>
+          <Button onClick={() => onGenerateLink(player)} className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white border-none px-6 font-fifa tracking-wide">
+            <Share2 className="w-4 h-4 mr-2" /> Votar
+          </Button>
+          <DialogClose asChild>
+             <Button size="icon" className="rounded-full bg-red-500/20 hover:bg-red-500/40 text-red-200 border border-red-500/50">
+                <X className="w-5 h-5" />
+             </Button>
+          </DialogClose>
+        </div>
 
-        </DialogContent>
-      </Dialog>
-      {/* Removed Modal Dialog for Result since button is gone */}
-    </>
+      </DialogContent>
+    </Dialog>
   );
 };
 
