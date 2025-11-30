@@ -336,7 +336,8 @@ metadata:
   test_sequence: 1
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Export Functionality Fix (allowTaint: false)"
   stuck_tasks: []
   test_all: false
   test_priority: "critical_first"
