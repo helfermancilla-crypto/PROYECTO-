@@ -64,13 +64,15 @@ const VotingPage = () => {
   };
 
   const statLabels = {
-    speed: 'Velocidad',
-    dribbling: 'Regate',
-    reception: 'Recepción',
-    passing: 'Pase',
-    shooting: 'Disparo',
-    stamina: 'Resistencia',
-    heading: 'Cabezazo'
+    rit: 'Ritmo',
+    tir: 'Tiro',
+    pas: 'Pase',
+    reg: 'Regate',
+    def: 'Defensa',
+    fis: 'Físico',
+    con: 'Control',
+    res: 'Resistencia',
+    cab: 'Cabeceo'
   };
 
   if (loading) {
