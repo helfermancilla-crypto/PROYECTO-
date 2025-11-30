@@ -268,21 +268,17 @@ const Home = () => {
           <Pitch onPlayerClick={handlePlayerClick} />
 
           {/* PITCH COLOR DROPDOWN - MOVED TO TOP LEFT AS ORDERED */}
-          <div className="absolute top-4 left-4 z-20 bg-slate-900/80 backdrop-blur rounded-md border border-slate-700 shadow-lg p-1">
-            <Select 
+          <div className="absolute top-4 left-4 z-20">
+            <select 
               value={pitchSettings.color} 
-              onValueChange={(v) => setPitchSettings(prev => ({...prev, color: v}))}
+              onChange={(e) => setPitchSettings(prev => ({...prev, color: e.target.value}))}
+              className="bg-slate-900/90 backdrop-blur text-white border border-slate-700 rounded-md px-3 py-1.5 text-xs font-medium shadow-lg hover:bg-slate-800 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
             >
-              <SelectTrigger className="bg-transparent border-none h-8 text-xs w-[120px] focus:ring-0 text-white">
-                <SelectValue placeholder="Color Campo" />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-700 text-white">
-                <SelectItem value="green">Verde Clásico</SelectItem>
-                <SelectItem value="red">Rojo Infierno</SelectItem>
-                <SelectItem value="blue">Azul Noche</SelectItem>
-                <SelectItem value="black">Obsidiana</SelectItem>
-              </SelectContent>
-            </Select>
+              <option value="green">🟢 Verde Clásico</option>
+              <option value="red">🔴 Rojo Infierno</option>
+              <option value="blue">🔵 Azul Noche</option>
+              <option value="black">⚫ Obsidiana</option>
+            </select>
           </div>
         </div>
 
