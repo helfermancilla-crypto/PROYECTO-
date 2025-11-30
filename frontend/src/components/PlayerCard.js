@@ -223,17 +223,26 @@ const PlayerCard = ({ player, open, onOpenChange, onEdit, onGenerateLink }) => {
       try {
         const canvas = await html2canvas(cardRef.current, {
           backgroundColor: null,
-          scale: 3,
-          useCORS: true, // Enable CORS to load external images
-          logging: true, // Enable logging for debug
-          allowTaint: false, // CRITICAL: Must be false to allow toDataURL
-          foreignObjectRendering: false // Sometimes helps stability
+          scale: 3, // High quality for crisp text
+          useCORS: true, // Essential for external images
+          logging: false,
+          allowTaint: true, // Enable taint to capture textures
+          foreignObjectRendering: true, // KEY FIX: Better support for CSS filters/mix-blend-mode
+          removeContainer: true, // Clean up
+          onclone: (clonedDoc) => {
+            // Fix potential clipping issues in clone
+            const clonedCard = clonedDoc.querySelector('.relative.w-\\[380px\\]');
+            if (clonedCard) {
+              clonedCard.style.transform = 'none'; // Remove scale transform during capture
+              clonedCard.style.margin = '0'; // Remove margins
+            }
+          }
         });
         
         const link = document.createElement('a');
         link.download = `${player.name}_card.png`;
         link.href = canvas.toDataURL('image/png');
-        document.body.appendChild(link); // Append to body to ensure click works
+        document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
       } catch (error) {
